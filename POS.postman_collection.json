@@ -1,0 +1,728 @@
+{
+	"info": {
+		"_postman_id": "837d4d8a-3d09-446c-9267-897dc55a66d1",
+		"name": "POS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28553096"
+	},
+	"item": [
+		{
+			"name": "productos",
+			"item": [
+				{
+					"name": "Crear producto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Producto Test\",\r\n    \"precio\": 100.00,\r\n    \"stock\": 50,\r\n    \"con_itbis\": true,\r\n    \"categoria\": \"Test\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/productos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un producto",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\r\n  \"stock\": 35\r\n\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://10.0.0.20:4100/productos/1",
+							"protocol": "http",
+							"host": [
+								"10",
+								"0",
+								"0",
+								"20"
+							],
+							"port": "4100",
+							"path": [
+								"productos",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un producto",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://10.0.0.20:4100/productos/:id",
+							"protocol": "http",
+							"host": [
+								"10",
+								"0",
+								"0",
+								"20"
+							],
+							"port": "4100",
+							"path": [
+								"productos",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lista productos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": " {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/productos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ventas",
+			"item": [
+				{
+					"name": "Crear una venta",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"metodo_pago\": \"efectivo\",\r\n  \"productos\": [\r\n    {\r\n      \"producto_id\": 1,\r\n      \"cantidad\": 4,\r\n      \"precio_unitario\": 225\r\n    },\r\n    {\r\n      \"producto_id\": 2,\r\n      \"cantidad\": 1,\r\n      \"precio_unitario\": 250\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://10.0.0.20:4100/ventas",
+							"protocol": "http",
+							"host": [
+								"10",
+								"0",
+								"0",
+								"20"
+							],
+							"port": "4100",
+							"path": [
+								"ventas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lista ventas",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nombre\": \"Presidente grande\",\r\n  \"precio\": 250,\r\n  \"stock\": 40,\r\n  \"con_itbis\": true,\r\n  \"categoria\": \"cerveza\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://10.0.0.20:4100/ventas",
+							"protocol": "http",
+							"host": [
+								"10",
+								"0",
+								"0",
+								"20"
+							],
+							"port": "4100",
+							"path": [
+								"ventas"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "health",
+			"item": [
+				{
+					"name": "health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://10.0.0.20:4100/",
+							"protocol": "http",
+							"host": [
+								"10",
+								"0",
+								"0",
+								"20"
+							],
+							"port": "4100",
+							"path": [
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "reportes",
+			"item": [
+				{
+					"name": "diario",
+					"item": [
+						{
+							"name": "Reporte de ventas agrupadas por dia",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://10.0.0.20:4100/reportes/ventas-diarias",
+									"protocol": "http",
+									"host": [
+										"10",
+										"0",
+										"0",
+										"20"
+									],
+									"port": "4100",
+									"path": [
+										"reportes",
+										"ventas-diarias"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "productos",
+					"item": [
+						{
+							"name": "Obtener productos mas vendidos",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://10.0.0.20:4100/reportes/productos-mas-vendidos",
+									"protocol": "http",
+									"host": [
+										"10",
+										"0",
+										"0",
+										"20"
+									],
+									"port": "4100",
+									"path": [
+										"reportes",
+										"productos-mas-vendidos"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "metodos-pago",
+					"item": [
+						{
+							"name": "Obtener resumen de ventas por metodo de pago",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://10.0.0.20:4100/reportes/resumen-metodo-pago",
+									"protocol": "http",
+									"host": [
+										"10",
+										"0",
+										"0",
+										"20"
+									],
+									"port": "4100",
+									"path": [
+										"reportes",
+										"resumen-metodo-pago"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Obtener la respuesta JSON\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verificar si el parámetro 'data.token' está presente\r",
+									"if (jsonData.data && jsonData.data.token) {\r",
+									"    // Almacenar el valor con \"Bearer \" incluido\r",
+									"    pm.environment.set(\"token\", \"Bearer \" + jsonData.data.token);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"usuario@ejemplo.com\",\r\n    \"password\": \"admin123\"\r\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://10.0.0.20:4100/auth/login",
+							"protocol": "http",
+							"host": [
+								"10",
+								"0",
+								"0",
+								"20"
+							],
+							"port": "4100",
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login cajero",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Obtener la respuesta JSON\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verificar si el parámetro 'data.token' está presente\r",
+									"if (jsonData.data && jsonData.data.token) {\r",
+									"    // Almacenar el valor con \"Bearer \" incluido\r",
+									"    pm.environment.set(\"token\", \"Bearer \" + jsonData.data.token);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"cajero1@demo.com\",\r\n    \"password\": \"demo123\"\r\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://10.0.0.20:4100/auth/login",
+							"protocol": "http",
+							"host": [
+								"10",
+								"0",
+								"0",
+								"20"
+							],
+							"port": "4100",
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login test-admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Obtener la respuesta JSON\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verificar si el parámetro 'data.token' está presente\r",
+									"if (jsonData.data && jsonData.data.token) {\r",
+									"    // Almacenar el valor con \"Bearer \" incluido\r",
+									"    pm.environment.set(\"token\", \"Bearer \" + jsonData.data.token);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"test@example.com\",\r\n    \"password\": \"password123\"\r\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://10.0.0.20:4100/auth/login",
+							"protocol": "http",
+							"host": [
+								"10",
+								"0",
+								"0",
+								"20"
+							],
+							"port": "4100",
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Obtener la respuesta JSON\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verificar si el parámetro 'data.token' está presente\r",
+									"if (jsonData.data && jsonData.data.token) {\r",
+									"    // Almacenar el valor con \"Bearer \" incluido\r",
+									"    pm.environment.set(\"token\", \"Bearer \" + jsonData.data.token);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"test@example.com\",\r\n    \"password\": \"password123\",\r\n    \"nombre\": \"Usuario Prueba\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "usuarios",
+			"item": [
+				{
+					"name": ":id",
+					"item": [
+						{
+							"name": "permissions",
+							"item": [
+								{
+									"name": "Lista permisos de un usuario especifico",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{token}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/usuarios/1/permissions",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"usuarios",
+												"1",
+												"permissions"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "role",
+							"item": [
+								{
+									"name": "Cambiar el rol de un usuario",
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\"role_id\": 3}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/usuarios/:id/role",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"usuarios",
+												":id",
+												"role"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "2"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Lista usuarios",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/usuarios",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"usuarios"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
