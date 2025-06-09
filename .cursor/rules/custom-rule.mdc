@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always respond in spanish. 
+Do not create things before explaining me why you'll implement it.
+Our Layout is already in src/components/layout/MainLayout.tsx. Do not try to create a new one.
