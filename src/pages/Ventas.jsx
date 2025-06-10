@@ -1,227 +1,168 @@
 import { useState, useEffect } from "react";
 import salesService from "../api/sales.service";
 
-const Ventas = () => {
-  const [sales, setSales] = useState([]);
+export default function Ventas() {
+  const [ventas, setVentas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
+  const [showError, setShowError] = useState(false);
   const [filters, setFilters] = useState({
-    page: 1,
-    size: 10,
     fecha_inicio: "",
     fecha_fin: "",
     metodo_pago: "",
   });
-  const [pagination, setPagination] = useState({
-    totalElements: 0,
-    totalPages: 0,
-    currentPage: 1,
-  });
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    fetchSales();
-  }, [filters]);
+  const showErrorMessage = (msg) => {
+    setError(msg);
+    setShowError(true);
+    setTimeout(() => {
+      setShowError(false);
+      setError("");
+    }, 4000);
+  };
 
-  const fetchSales = async () => {
+  const fetchVentas = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const data = await salesService.getSales(filters);
-      setSales(Array.isArray(data.data) ? data.data : []);
-      setPagination({
-        totalElements: data.totalElements || 0,
-        totalPages: data.totalPages || 0,
-        currentPage: data.page || 1,
-      });
+      const params = { ...filters, page };
+      const res = await salesService.getSales(params);
+      setVentas(res.data);
+      setTotalPages(res.totalPages || 1);
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.errores) {
-        setError(err.response.data.errores[0]);
-      } else {
-        setError("Error al cargar las ventas");
-      }
-      console.error(err);
+      showErrorMessage("Error al cargar las ventas");
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchVentas();
+    // eslint-disable-next-line
+  }, [filters, page]);
+
   const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value,
-      page: 1, // Resetear a la primera página al cambiar filtros
-    }));
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+    setPage(1);
   };
 
-  const handlePageChange = (newPage) => {
-    setFilters((prev) => ({
-      ...prev,
-      page: newPage,
-    }));
-  };
-
-  const formatDate = (dateString) => {
-    const options = {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    };
-    return new Date(dateString).toLocaleString("es-DO", options);
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("es-DO", {
-      style: "currency",
-      currency: "DOP",
-    }).format(amount);
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
-
+  // Responsive: tarjetas en móvil, tabla en escritorio
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-900">Ventas</h1>
-      </div>
+    <div className="p-4 max-w-5xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4 text-gray-800">
+        Historial de Ventas
+      </h1>
 
-      {error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-          role="alert"
-        >
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
+      {/* Mensaje de error */}
+      {showError && (
+        <div className="fixed top-4 right-4 w-auto max-w-[90%] sm:max-w-md bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-lg shadow-lg z-50 animate-fade-in">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-medium break-words">{error}</p>
+            <button
+              className="flex-shrink-0 text-red-500 hover:text-red-700 focus:outline-none"
+              onClick={() => {
+                setShowError(false);
+                setError("");
+              }}
+            >
+              <span className="sr-only">Cerrar</span>
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
 
       {/* Filtros */}
-      <div className="bg-white shadow rounded-lg p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Fecha Inicio
-            </label>
-            <input
-              type="date"
-              name="fecha_inicio"
-              value={filters.fecha_inicio}
-              onChange={handleFilterChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Fecha Fin
-            </label>
-            <input
-              type="date"
-              name="fecha_fin"
-              value={filters.fecha_fin}
-              onChange={handleFilterChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Método de Pago
-            </label>
-            <select
-              name="metodo_pago"
-              value={filters.metodo_pago}
-              onChange={handleFilterChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            >
-              <option value="">Todos</option>
-              <option value="efectivo">Efectivo</option>
-              <option value="tarjeta">Tarjeta</option>
-              <option value="transferencia">Transferencia</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Resultados por página
-            </label>
-            <select
-              name="size"
-              value={filters.size}
-              onChange={handleFilterChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            >
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-            </select>
-          </div>
-        </div>
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+        <input
+          type="date"
+          name="fecha_inicio"
+          value={filters.fecha_inicio}
+          onChange={handleFilterChange}
+          className="border rounded px-2 py-1 text-sm w-full sm:w-auto"
+        />
+        <input
+          type="date"
+          name="fecha_fin"
+          value={filters.fecha_fin}
+          onChange={handleFilterChange}
+          className="border rounded px-2 py-1 text-sm w-full sm:w-auto"
+        />
+        <select
+          name="metodo_pago"
+          value={filters.metodo_pago}
+          onChange={handleFilterChange}
+          className="border rounded px-2 py-1 text-sm w-full sm:w-auto"
+        >
+          <option value="">Todos los métodos</option>
+          <option value="efectivo">Efectivo</option>
+          <option value="tarjeta">Tarjeta</option>
+          <option value="transferencia">Transferencia</option>
+        </select>
       </div>
 
-      {/* Tabla de Ventas */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+      {/* Tabla en escritorio, tarjetas en móvil */}
+      <div className="hidden sm:block">
+        <table className="min-w-full bg-white rounded-lg shadow overflow-hidden">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Productos
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">
                 Fecha
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Subtotal
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ITBIS
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">
                 Total
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Método de Pago
+              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">
+                Método
+              </th>
+              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">
+                Acciones
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {sales.map((sale) => (
-              <tr key={sale.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {sale.id}
+          <tbody>
+            {ventas.length === 0 && (
+              <tr>
+                <td colSpan={4} className="text-center py-6 text-gray-400">
+                  No hay ventas
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
-                  <ul className="list-disc list-inside">
-                    {sale.productos.map((producto, index) => (
-                      <li key={index}>
-                        {producto.cantidad} x {producto.nombre} -{" "}
-                        {formatCurrency(producto.precio_unitario)}
-                      </li>
-                    ))}
-                  </ul>
+              </tr>
+            )}
+            {ventas.map((venta) => (
+              <tr
+                key={venta.id}
+                className="border-b last:border-0 hover:bg-gray-50"
+              >
+                <td className="px-4 py-2 text-sm">{venta.fecha}</td>
+                <td className="px-4 py-2 text-sm font-bold text-indigo-700">
+                  RD${" "}
+                  {Number(venta.total).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatDate(sale.fecha)}
+                <td className="px-4 py-2 text-sm capitalize">
+                  {venta.metodo_pago}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatCurrency(sale.subtotal)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatCurrency(sale.itbis_total)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatCurrency(sale.total_final)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {sale.metodo_pago.charAt(0).toUpperCase() +
-                    sale.metodo_pago.slice(1)}
+                <td className="px-4 py-2 text-sm">
+                  <button
+                    className="text-indigo-600 hover:underline text-xs"
+                    onClick={() => alert("Detalle de venta próximamente")}
+                  >
+                    Ver Detalle
+                  </button>
                 </td>
               </tr>
             ))}
@@ -229,30 +170,60 @@ const Ventas = () => {
         </table>
       </div>
 
+      {/* Tarjetas en móvil */}
+      <div className="sm:hidden flex flex-col gap-3">
+        {ventas.length === 0 && (
+          <div className="text-center py-6 text-gray-400 bg-white rounded shadow">
+            No hay ventas
+          </div>
+        )}
+        {ventas.map((venta) => (
+          <div
+            key={venta.id}
+            className="bg-white rounded-lg shadow p-3 flex flex-col gap-1"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500">{venta.fecha}</span>
+              <span className="text-xs capitalize bg-gray-100 px-2 py-0.5 rounded">
+                {venta.metodo_pago}
+              </span>
+            </div>
+            <div className="text-lg font-bold text-indigo-700">
+              RD${" "}
+              {Number(venta.total).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            </div>
+            <button
+              className="self-end text-indigo-600 hover:underline text-xs mt-1"
+              onClick={() => alert("Detalle de venta próximamente")}
+            >
+              Ver Detalle
+            </button>
+          </div>
+        ))}
+      </div>
+
       {/* Paginación */}
-      {pagination.totalPages > 1 && (
-        <div className="flex justify-center space-x-2">
-          <button
-            onClick={() => handlePageChange(pagination.currentPage - 1)}
-            disabled={pagination.currentPage === 1}
-            className="px-3 py-1 rounded-md bg-gray-200 text-gray-700 disabled:opacity-50"
-          >
-            Anterior
-          </button>
-          <span className="px-3 py-1">
-            Página {pagination.currentPage} de {pagination.totalPages}
-          </span>
-          <button
-            onClick={() => handlePageChange(pagination.currentPage + 1)}
-            disabled={pagination.currentPage === pagination.totalPages}
-            className="px-3 py-1 rounded-md bg-gray-200 text-gray-700 disabled:opacity-50"
-          >
-            Siguiente
-          </button>
-        </div>
-      )}
+      <div className="flex justify-center items-center gap-2 mt-6">
+        <button
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+          className="px-3 py-1 rounded bg-gray-200 text-gray-600 hover:bg-gray-300 disabled:opacity-50"
+        >
+          Anterior
+        </button>
+        <span className="text-sm">
+          Página {page} de {totalPages}
+        </span>
+        <button
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={page === totalPages}
+          className="px-3 py-1 rounded bg-gray-200 text-gray-600 hover:bg-gray-300 disabled:opacity-50"
+        >
+          Siguiente
+        </button>
+      </div>
     </div>
   );
-};
-
-export default Ventas;
+}

@@ -1,31 +1,32 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export const API_ENDPOINTS = {
+    BASE_URL: API_BASE_URL,
     AUTH: {
-        LOGIN: '/auth/login',
-        LOGOUT: '/auth/logout',
-        REFRESH: '/auth/refresh',
+        LOGIN: '/api/auth/login',
+        LOGOUT: '/api/auth/logout',
+        REFRESH: '/api/auth/refresh',
     },
     PRODUCTS: {
-        LIST: '/productos',
-        CREATE: '/productos',
-        UPDATE: '/productos/:id',
-        DELETE: '/productos/:id',
+        LIST: '/api/productos',
+        CREATE: '/api/productos',
+        UPDATE: '/api/productos/:id',
+        DELETE: '/api/productos/:id',
     },
     SALES: {
-        LIST: '/ventas',
-        CREATE: '/ventas',
-        DETAIL: '/ventas/:id',
+        LIST: '/api/ventas',
+        CREATE: '/api/ventas',
+        DETAIL: '/api/ventas/:id',
     },
     CATEGORIES: {
-        LIST: '/categorias',
-        CREATE: '/categorias',
-        UPDATE: '/categorias/:id',
-        DELETE: '/categorias/:id',
+        LIST: '/api/categorias',
+        CREATE: '/api/categorias',
+        UPDATE: '/api/categorias/:id',
+        DELETE: '/api/categorias/:id',
     },
     REPORTS: {
-        DAILY_SALES: '/reportes/ventas-diarias',
-        TOP_PRODUCTS: '/reportes/productos-mas-vendidos',
-        PAYMENT_METHODS: '/reportes/resumen-metodo-pago'
+        DAILY_SALES: '/api/reportes/ventas-diarias',
+        TOP_PRODUCTS: '/api/reportes/productos-mas-vendidos',
+        PAYMENT_METHODS: '/api/reportes/resumen-metodo-pago'
     }
 }; 

@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import productsService from "../api/products.service";
 import categoriesService from "../api/categories.service";
+import { API_ENDPOINTS } from "../api/config";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
+  const [showError, setShowError] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({
@@ -14,8 +16,11 @@ const Products = () => {
     precio: "",
     stock: "",
     con_itbis: true,
-    categoria: "",
+    categoria_id: "",
+    imagen: "",
   });
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -52,13 +57,52 @@ const Products = () => {
     }));
   };
 
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        setLoading(true);
+        const result = await productsService.uploadImage(file);
+        setFormData((prev) => ({
+          ...prev,
+          imagen: result.nombre_archivo,
+        }));
+        setPreviewImage(URL.createObjectURL(file));
+      } catch (error) {
+        setError(error.message || "Error al subir la imagen");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setPreviewImage(null);
+    setFormData((prev) => ({
+      ...prev,
+      imagen: "",
+    }));
+  };
+
+  const showErrorMessage = (message) => {
+    setError(message);
+    setShowError(true);
+    // Ocultar el mensaje después de 5 segundos
+    setTimeout(() => {
+      setShowError(false);
+      setError("");
+    }, 5000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const dataToSend = {
         ...formData,
-        precio: Number(formData.precio),
-        stock: Number(formData.stock),
+        precio: parseFloat(formData.precio),
+        stock: parseInt(formData.stock),
       };
 
       if (editingProduct) {
@@ -66,23 +110,29 @@ const Products = () => {
       } else {
         await productsService.createProduct(dataToSend);
       }
+
       setShowModal(false);
-      setEditingProduct(null);
       setFormData({
         nombre: "",
         precio: "",
         stock: "",
         con_itbis: true,
-        categoria: "",
+        categoria_id: "",
+        imagen: "",
       });
+      setSelectedImage(null);
+      setPreviewImage(null);
       fetchProducts();
-    } catch (err) {
-      if (err.response && err.response.data && err.response.data.errores) {
-        setError(err.response.data.errores[0]);
+    } catch (error) {
+      if (error.response?.data?.errores) {
+        showErrorMessage(error.response.data.errores[0]);
+      } else if (error.response?.data?.mensaje) {
+        showErrorMessage(error.response.data.mensaje);
       } else {
-        setError("Error al guardar el producto");
+        showErrorMessage("Error al guardar el producto");
       }
-      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,23 +143,35 @@ const Products = () => {
       precio: product.precio,
       stock: product.stock,
       con_itbis: product.con_itbis,
-      categoria: product.categoria_nombre || product.categoria,
+      categoria_id: product.categoria_id,
+      imagen: product.imagen || "",
     });
+    if (product.imagen) {
+      setPreviewImage(
+        `${API_ENDPOINTS.BASE_URL}/api/imagenes/productos/${product.imagen}`
+      );
+    } else {
+      setPreviewImage(null);
+    }
     setShowModal(true);
   };
 
   const handleDelete = async (id) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este producto?")) {
       try {
+        setLoading(true);
         await productsService.deleteProduct(id);
         fetchProducts();
-      } catch (err) {
-        if (err.response && err.response.data && err.response.data.errores) {
-          setError(err.response.data.errores[0]);
+      } catch (error) {
+        if (error.response?.data?.errores) {
+          showErrorMessage(error.response.data.errores[0]);
+        } else if (error.response?.data?.mensaje) {
+          showErrorMessage(error.response.data.mensaje);
         } else {
-          setError("Error al eliminar el producto");
+          showErrorMessage("Error al eliminar el producto");
         }
-        console.error(err);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -134,7 +196,8 @@ const Products = () => {
               precio: "",
               stock: "",
               con_itbis: true,
-              categoria: "",
+              categoria_id: "",
+              imagen: "",
             });
             setShowModal(true);
           }}
@@ -144,13 +207,33 @@ const Products = () => {
         </button>
       </div>
 
-      {error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-          role="alert"
-        >
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
+      {showError && (
+        <div className="fixed top-4 right-4 w-auto max-w-[90%] sm:max-w-md bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-lg shadow-lg z-50 animate-fade-in">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-medium break-words">{error}</p>
+            <button
+              className="flex-shrink-0 text-red-500 hover:text-red-700 focus:outline-none"
+              onClick={() => {
+                setShowError(false);
+                setError("");
+              }}
+            >
+              <span className="sr-only">Cerrar</span>
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
 
@@ -158,6 +241,9 @@ const Products = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Imagen
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Nombre
               </th>
@@ -181,6 +267,24 @@ const Products = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {products.map((product) => (
               <tr key={product.id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {product.imagen ? (
+                    <img
+                      src={`${API_ENDPOINTS.BASE_URL}/api/imagenes/productos/${product.imagen}`}
+                      alt={product.nombre}
+                      className="w-12 h-12 object-cover rounded-lg"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src =
+                          "https://via.placeholder.com/48?text=No+Image";
+                      }}
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <span className="text-gray-400">📦</span>
+                    </div>
+                  )}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {product.nombre}
                 </td>
@@ -217,22 +321,59 @@ const Products = () => {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
                 {editingProduct ? "Editar Producto" : "Nuevo Producto"}
-              </h3>
+              </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Imagen del Producto
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    {previewImage && (
+                      <div className="relative w-24 h-24">
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="block w-full text-sm text-gray-500
+                          file:mr-4 file:py-2 file:px-4
+                          file:rounded-full file:border-0
+                          file:text-sm file:font-semibold
+                          file:bg-indigo-50 file:text-indigo-700
+                          hover:file:bg-indigo-100"
+                      />
+                    </div>
+                  </div>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Nombre
                   </label>
                   <input
                     type="text"
-                    name="nombre"
                     value={formData.nombre}
-                    onChange={handleInputChange}
+                    onChange={(e) =>
+                      setFormData({ ...formData, nombre: e.target.value })
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     required
                   />
@@ -269,15 +410,15 @@ const Products = () => {
                     Categoría
                   </label>
                   <select
-                    name="categoria"
-                    value={formData.categoria}
+                    name="categoria_id"
+                    value={formData.categoria_id}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     required
                   >
                     <option value="">Seleccione una categoría</option>
                     {categories.map((category) => (
-                      <option key={category.id} value={category.nombre}>
+                      <option key={category.id} value={category.id}>
                         {category.nombre}
                       </option>
                     ))}
@@ -295,19 +436,32 @@ const Products = () => {
                     Incluye ITBIS
                   </label>
                 </div>
-                <div className="flex justify-end space-x-3">
+                <div className="flex justify-end space-x-3 mt-6">
                   <button
                     type="button"
-                    onClick={() => setShowModal(false)}
-                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300"
+                    onClick={() => {
+                      setShowModal(false);
+                      setFormData({
+                        nombre: "",
+                        precio: "",
+                        stock: "",
+                        con_itbis: true,
+                        categoria_id: "",
+                        imagen: "",
+                      });
+                      setSelectedImage(null);
+                      setPreviewImage(null);
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                    disabled={loading}
+                    className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                   >
-                    {editingProduct ? "Actualizar" : "Crear"}
+                    {loading ? "Guardando..." : "Guardar"}
                   </button>
                 </div>
               </form>

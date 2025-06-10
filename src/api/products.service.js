@@ -36,7 +36,22 @@ const productsService = {
         } catch (error) {
             throw error;
         }
-    }
+    },
+
+    uploadImage: async (imageFile) => {
+        const formData = new FormData();
+        formData.append("imagen", imageFile);
+        const response = await axiosInstance.post(
+            "/api/productos/upload-imagen",
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
+        return response.data;
+    },
 };
 
 export default productsService; 

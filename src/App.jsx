@@ -9,7 +9,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import MainLayout from "./components/Layout/MainLayout";
-import PuntoDeVenta from "./pages/PuntoDeVenta";
+import PuntoVenta from "./pages/PuntoVenta";
 import Categorias from "./pages/Categorias";
 import Ventas from "./pages/Ventas";
 
@@ -64,7 +64,7 @@ function App() {
           path="/pos"
           element={
             <PrivateRoute>
-              <PuntoDeVenta />
+              <PuntoVenta />
             </PrivateRoute>
           }
         />

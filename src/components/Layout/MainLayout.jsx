@@ -21,7 +21,7 @@ const MainLayout = ({ children }) => {
         } transition-transform duration-300 ease-in-out`}
       >
         <div className="flex items-center justify-center h-16 bg-gray-900">
-          <h1 className="text-white text-xl font-bold">POS FacturaRD</h1>
+          <h1 className="text-white text-xl font-bold">CORO 69</h1>
         </div>
         <nav className="mt-5 px-2">
           <Link
