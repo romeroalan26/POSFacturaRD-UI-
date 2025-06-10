@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import productsService from "../api/products.service";
+import categoriesService from "../api/categories.service";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -17,6 +19,7 @@ const Products = () => {
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
 
   const fetchProducts = async () => {
@@ -32,6 +35,15 @@ const Products = () => {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const data = await categoriesService.getCategories();
+      setCategories(Array.isArray(data.data) ? data.data : []);
+    } catch (err) {
+      console.error("Error al cargar las categorías:", err);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -43,10 +55,16 @@ const Products = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const dataToSend = {
+        ...formData,
+        precio: Number(formData.precio),
+        stock: Number(formData.stock),
+      };
+
       if (editingProduct) {
-        await productsService.updateProduct(editingProduct.id, formData);
+        await productsService.updateProduct(editingProduct.id, dataToSend);
       } else {
-        await productsService.createProduct(formData);
+        await productsService.createProduct(dataToSend);
       }
       setShowModal(false);
       setEditingProduct(null);
@@ -59,7 +77,11 @@ const Products = () => {
       });
       fetchProducts();
     } catch (err) {
-      setError("Error al guardar el producto");
+      if (err.response && err.response.data && err.response.data.errores) {
+        setError(err.response.data.errores[0]);
+      } else {
+        setError("Error al guardar el producto");
+      }
       console.error(err);
     }
   };
@@ -71,7 +93,7 @@ const Products = () => {
       precio: product.precio,
       stock: product.stock,
       con_itbis: product.con_itbis,
-      categoria: product.categoria,
+      categoria: product.categoria_nombre || product.categoria,
     });
     setShowModal(true);
   };
@@ -82,7 +104,11 @@ const Products = () => {
         await productsService.deleteProduct(id);
         fetchProducts();
       } catch (err) {
-        setError("Error al eliminar el producto");
+        if (err.response && err.response.data && err.response.data.errores) {
+          setError(err.response.data.errores[0]);
+        } else {
+          setError("Error al eliminar el producto");
+        }
         console.error(err);
       }
     }
@@ -165,7 +191,7 @@ const Products = () => {
                   {product.stock}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {product.categoria}
+                  {product.categoria_nombre || product.categoria}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {product.con_itbis ? "Sí" : "No"}
@@ -242,14 +268,20 @@ const Products = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Categoría
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="categoria"
                     value={formData.categoria}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     required
-                  />
+                  >
+                    <option value="">Seleccione una categoría</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.nombre}>
+                        {category.nombre}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="flex items-center">
                   <input
