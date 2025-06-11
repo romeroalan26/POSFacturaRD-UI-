@@ -41,6 +41,18 @@ const usersService = {
         } catch (error) {
             throw error;
         }
+    },
+
+    // Reiniciar contraseña de usuario
+    async resetUserPassword(userId, newPassword) {
+        try {
+            const response = await axiosInstance.put(`/api/usuarios/${userId}/reset-password`, {
+                password: newPassword
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
     }
 };
 

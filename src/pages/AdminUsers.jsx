@@ -5,10 +5,25 @@ const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [passwordError, setPasswordError] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showPermissions, setShowPermissions] = useState(false);
   const [permissions, setPermissions] = useState(null);
   const [showNewUserForm, setShowNewUserForm] = useState(false);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [showRoleConfirmModal, setShowRoleConfirmModal] = useState(false);
+  const [roleChangeData, setRoleChangeData] = useState({
+    userId: null,
+    newRoleId: null,
+    userName: "",
+    newRoleName: "",
+  });
+  const [resetPasswordData, setResetPasswordData] = useState({
+    userId: null,
+    newPassword: "",
+    confirmPassword: "",
+  });
   const [newUser, setNewUser] = useState({
     email: "",
     password: "",
@@ -41,9 +56,30 @@ const AdminUsers = () => {
   };
 
   const handleRoleChange = async (userId, roleId) => {
+    const user = users.find((u) => u.id === userId);
+    const newRole = roles.find((r) => r.id === roleId);
+
+    setRoleChangeData({
+      userId,
+      newRoleId: roleId,
+      userName: user.nombre,
+      newRoleName: newRole.nombre,
+    });
+    setShowRoleConfirmModal(true);
+  };
+
+  const confirmRoleChange = async () => {
     try {
-      await usersService.updateUserRole(userId, roleId);
-      await loadUsers(); // Recargar la lista de usuarios
+      await usersService.updateUserRole(
+        roleChangeData.userId,
+        roleChangeData.newRoleId
+      );
+      await loadUsers();
+      setShowRoleConfirmModal(false);
+      setSuccessMessage(
+        `Rol actualizado exitosamente para ${roleChangeData.userName}`
+      );
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       setError("Error al actualizar el rol");
       console.error(err);
@@ -75,6 +111,46 @@ const AdminUsers = () => {
     }
   };
 
+  const handleResetPassword = async (userId) => {
+    setResetPasswordData({
+      userId,
+      newPassword: "",
+      confirmPassword: "",
+    });
+    setShowResetPasswordModal(true);
+  };
+
+  const handleResetPasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (resetPasswordData.newPassword !== resetPasswordData.confirmPassword) {
+      setPasswordError("Las contraseñas no coinciden");
+      return;
+    }
+    if (resetPasswordData.newPassword.length < 6) {
+      setPasswordError("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+
+    try {
+      await usersService.resetUserPassword(
+        resetPasswordData.userId,
+        resetPasswordData.newPassword
+      );
+      setShowResetPasswordModal(false);
+      setResetPasswordData({
+        userId: null,
+        newPassword: "",
+        confirmPassword: "",
+      });
+      setPasswordError(null);
+      setSuccessMessage("Contraseña actualizada exitosamente");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      setPasswordError("Error al reiniciar la contraseña");
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -98,6 +174,12 @@ const AdminUsers = () => {
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {successMessage}
         </div>
       )}
 
@@ -140,12 +222,18 @@ const AdminUsers = () => {
                     ))}
                   </select>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap space-x-2">
                   <button
                     onClick={() => handleViewPermissions(user.id)}
                     className="text-indigo-600 hover:text-indigo-900"
                   >
                     Ver Permisos
+                  </button>
+                  <button
+                    onClick={() => handleResetPassword(user.id)}
+                    className="text-green-600 hover:text-green-900"
+                  >
+                    Reiniciar Contraseña
                   </button>
                 </td>
               </tr>
@@ -192,6 +280,82 @@ const AdminUsers = () => {
                   Cerrar
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Reinicio de Contraseña */}
+      {showResetPasswordModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                Reiniciar Contraseña
+              </h3>
+              {passwordError && (
+                <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                  <span className="block sm:inline">{passwordError}</span>
+                </div>
+              )}
+              <form onSubmit={handleResetPasswordSubmit}>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Nueva Contraseña
+                  </label>
+                  <input
+                    type="password"
+                    value={resetPasswordData.newPassword}
+                    onChange={(e) => {
+                      setResetPasswordData({
+                        ...resetPasswordData,
+                        newPassword: e.target.value,
+                      });
+                      setPasswordError(null);
+                    }}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Confirmar Contraseña
+                  </label>
+                  <input
+                    type="password"
+                    value={resetPasswordData.confirmPassword}
+                    onChange={(e) => {
+                      setResetPasswordData({
+                        ...resetPasswordData,
+                        confirmPassword: e.target.value,
+                      });
+                      setPasswordError(null);
+                    }}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowResetPasswordModal(false);
+                      setPasswordError(null);
+                    }}
+                    className="mr-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md"
+                  >
+                    Reiniciar Contraseña
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
@@ -265,6 +429,50 @@ const AdminUsers = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación de Cambio de Rol */}
+      {showRoleConfirmModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                Confirmar Cambio de Rol
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-gray-600 mb-4">
+                  ¿Estás seguro que deseas cambiar el rol de{" "}
+                  <span className="font-semibold">
+                    {roleChangeData.userName}
+                  </span>{" "}
+                  a{" "}
+                  <span className="font-semibold capitalize">
+                    {roleChangeData.newRoleName}
+                  </span>
+                  ?
+                </p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Este cambio afectará los permisos y accesos del usuario en el
+                  sistema.
+                </p>
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowRoleConfirmModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmRoleChange}
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md"
+                >
+                  Confirmar Cambio
+                </button>
+              </div>
             </div>
           </div>
         </div>
