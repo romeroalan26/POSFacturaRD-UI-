@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import productsService from "../api/products.service";
 import categoriesService from "../api/categories.service";
 import { API_ENDPOINTS } from "../api/config";
+import ProductImage from "../components/ProductImage";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -18,20 +19,31 @@ const Products = () => {
     con_itbis: true,
     categoria_id: "",
     imagen: "",
+    is_active: true,
   });
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-  }, []);
+  }, [currentPage]);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const data = await productsService.getProducts();
+      const data = await productsService.getProducts({
+        page: currentPage,
+        per_page: itemsPerPage,
+      });
       setProducts(Array.isArray(data.data) ? data.data : []);
+      setTotalPages(data.totalPages || 1);
+      setTotalItems(data.totalElements || 0);
     } catch (err) {
       setError("Error al cargar los productos");
       console.error(err);
@@ -57,21 +69,13 @@ const Products = () => {
     }));
   };
 
-  const handleImageChange = async (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      try {
-        setLoading(true);
-        const result = await productsService.uploadImage(file);
-        setFormData((prev) => ({
-          ...prev,
-          imagen: result.nombre_archivo,
-        }));
-        setPreviewImage(URL.createObjectURL(file));
-      } catch (error) {
-        setError(error.message || "Error al subir la imagen");
-      } finally {
-        setLoading(false);
+      setImageFile(file);
+      setPreviewImage(URL.createObjectURL(file));
+      if (editingProduct) {
+        setSelectedImage(null);
       }
     }
   };
@@ -79,6 +83,7 @@ const Products = () => {
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setPreviewImage(null);
+    setImageFile(null);
     setFormData((prev) => ({
       ...prev,
       imagen: "",
@@ -88,7 +93,6 @@ const Products = () => {
   const showErrorMessage = (message) => {
     setError(message);
     setShowError(true);
-    // Ocultar el mensaje después de 5 segundos
     setTimeout(() => {
       setShowError(false);
       setError("");
@@ -99,10 +103,18 @@ const Products = () => {
     e.preventDefault();
     try {
       setLoading(true);
+      let imagenNombre = formData.imagen;
+
+      if (imageFile) {
+        const result = await productsService.uploadImage(imageFile);
+        imagenNombre = result.nombre_archivo;
+      }
+
       const dataToSend = {
         ...formData,
         precio: parseFloat(formData.precio),
         stock: parseInt(formData.stock),
+        imagen: imagenNombre,
       };
 
       if (editingProduct) {
@@ -119,9 +131,11 @@ const Products = () => {
         con_itbis: true,
         categoria_id: "",
         imagen: "",
+        is_active: true,
       });
       setSelectedImage(null);
       setPreviewImage(null);
+      setImageFile(null);
       fetchProducts();
     } catch (error) {
       if (error.response?.data?.errores) {
@@ -145,14 +159,18 @@ const Products = () => {
       con_itbis: product.con_itbis,
       categoria_id: product.categoria_id,
       imagen: product.imagen || "",
+      is_active: product.is_active,
     });
     if (product.imagen) {
       setPreviewImage(
         `${API_ENDPOINTS.BASE_URL}/api/imagenes/productos/${product.imagen}`
       );
+      setSelectedImage(product.imagen);
     } else {
       setPreviewImage(null);
+      setSelectedImage(null);
     }
+    setImageFile(null);
     setShowModal(true);
   };
 
@@ -198,126 +216,232 @@ const Products = () => {
               con_itbis: true,
               categoria_id: "",
               imagen: "",
+              is_active: true,
             });
+            setSelectedImage(null);
+            setPreviewImage(null);
+            setImageFile(null);
             setShowModal(true);
           }}
           className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
         >
-          Nuevo Producto
+          Agregar Producto
         </button>
       </div>
 
       {showError && (
-        <div className="fixed top-4 right-4 w-auto max-w-[90%] sm:max-w-md bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-lg shadow-lg z-50 animate-fade-in">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-sm font-medium break-words">{error}</p>
-            <button
-              className="flex-shrink-0 text-red-500 hover:text-red-700 focus:outline-none"
-              onClick={() => {
-                setShowError(false);
-                setError("");
-              }}
-            >
-              <span className="sr-only">Cerrar</span>
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+          {error}
         </div>
       )}
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Imagen
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nombre
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Precio
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Stock
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Categoría
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ITBIS
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {product.imagen ? (
-                    <img
-                      src={`${API_ENDPOINTS.BASE_URL}/api/imagenes/productos/${product.imagen}`}
-                      alt={product.nombre}
-                      className="w-12 h-12 object-cover rounded-lg"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src =
-                          "https://via.placeholder.com/48?text=No+Image";
-                      }}
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <span className="text-gray-400">📦</span>
-                    </div>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {product.nombre}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  RD$ {Number(product.precio).toFixed(2)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {product.stock}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {product.categoria_nombre || product.categoria}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {product.con_itbis ? "Sí" : "No"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <button
-                    onClick={() => handleEdit(product)}
-                    className="text-indigo-600 hover:text-indigo-900 mr-4"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(product.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Eliminar
-                  </button>
-                </td>
+      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Imagen
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nombre
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Precio
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Stock
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Categoría
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Estado
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acciones
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {products.map((product) => (
+                <tr key={product.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <ProductImage
+                      imageName={product.imagen}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {product.nombre}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      ${Number(product.precio).toFixed(2)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{product.stock}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {categories.find((c) => c.id === product.categoria_id)
+                        ?.nombre || "Sin categoría"}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        product.is_active
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {product.is_active ? "Activo" : "Inactivo"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button
+                      onClick={() => handleEdit(product)}
+                      className="text-indigo-600 hover:text-indigo-900 mr-4"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Paginación */}
+      <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+        <div className="flex flex-1 justify-between sm:hidden">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
+        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-gray-700">
+              Mostrando{" "}
+              <span className="font-medium">
+                {(currentPage - 1) * itemsPerPage + 1}
+              </span>{" "}
+              a{" "}
+              <span className="font-medium">
+                {Math.min(currentPage * itemsPerPage, totalItems)}
+              </span>{" "}
+              de <span className="font-medium">{totalItems}</span> resultados
+            </p>
+          </div>
+          <div>
+            <nav
+              className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+              aria-label="Pagination"
+            >
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+              >
+                <span className="sr-only">Anterior</span>
+                <svg
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              {[...Array(totalPages)].map((_, index) => {
+                const pageNumber = index + 1;
+                // Mostrar solo 5 páginas alrededor de la página actual
+                if (
+                  pageNumber === 1 ||
+                  pageNumber === totalPages ||
+                  (pageNumber >= currentPage - 2 &&
+                    pageNumber <= currentPage + 2)
+                ) {
+                  return (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                        currentPage === pageNumber
+                          ? "z-10 bg-indigo-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                          : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                } else if (
+                  pageNumber === currentPage - 3 ||
+                  pageNumber === currentPage + 3
+                ) {
+                  return (
+                    <span
+                      key={pageNumber}
+                      className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              })}
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+              >
+                <span className="sr-only">Siguiente</span>
+                <svg
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </nav>
+          </div>
+        </div>
       </div>
 
       {showModal && (
@@ -350,17 +474,21 @@ const Products = () => {
                       </div>
                     )}
                     <div className="flex-1">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="block w-full text-sm text-gray-500
-                          file:mr-4 file:py-2 file:px-4
-                          file:rounded-full file:border-0
-                          file:text-sm file:font-semibold
-                          file:bg-indigo-50 file:text-indigo-700
-                          hover:file:bg-indigo-100"
-                      />
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          id="file-upload"
+                        />
+                        <label
+                          htmlFor="file-upload"
+                          className="block w-full px-4 py-2 text-sm text-center text-indigo-700 bg-indigo-50 rounded-full cursor-pointer hover:bg-indigo-100 transition-colors duration-200"
+                        >
+                          Seleccionar Imagen
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -436,6 +564,18 @@ const Products = () => {
                     Incluye ITBIS
                   </label>
                 </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={formData.is_active}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                  <label className="ml-2 block text-sm text-gray-900">
+                    Producto Activo
+                  </label>
+                </div>
                 <div className="flex justify-end space-x-3 mt-6">
                   <button
                     type="button"
@@ -448,6 +588,7 @@ const Products = () => {
                         con_itbis: true,
                         categoria_id: "",
                         imagen: "",
+                        is_active: true,
                       });
                       setSelectedImage(null);
                       setPreviewImage(null);

@@ -3,6 +3,7 @@ import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import MainLayout from "../components/Layout/MainLayout";
 import authService from "../api/auth.service";
+import Categorias from "../pages/Categorias";
 
 // Componente para proteger rutas
 const PrivateRoute = ({ children }) => {
@@ -54,7 +55,7 @@ const privateRoutes = [
     path: "/categories",
     element: (
       <PrivateRoute>
-        <div>Categorías</div>
+        <Categorias />
       </PrivateRoute>
     ),
   },

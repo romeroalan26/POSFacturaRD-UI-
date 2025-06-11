@@ -1,10 +1,22 @@
 import axiosInstance from './axios.config';
 import { API_ENDPOINTS } from './config';
 
+const buildQuery = (params) => {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+            queryParams.append(key, value);
+        }
+    });
+    return queryParams.toString();
+};
+
 const productsService = {
-    async getProducts() {
+    async getProducts(params = {}) {
         try {
-            const response = await axiosInstance.get('/api/productos');
+            const query = buildQuery(params);
+            const url = `/api/productos${query ? `?${query}` : ''}`;
+            const response = await axiosInstance.get(url);
             return response.data;
         } catch (error) {
             throw error;

@@ -1,12 +1,24 @@
 import axiosInstance from './axios.config';
-import { API_ENDPOINTS } from './config';
+
+const buildQuery = (params) => {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+            queryParams.append(key, value);
+        }
+    });
+    return queryParams.toString();
+};
 
 const categoriesService = {
-    async getCategories() {
+    async getCategories(params = {}) {
         try {
-            const response = await axiosInstance.get('/api/categorias');
+            const query = buildQuery(params);
+            const url = `/api/categorias${query ? `?${query}` : ''}`;
+            const response = await axiosInstance.get(url);
             return response.data;
         } catch (error) {
+            console.error('Error en getCategories:', error);
             throw error;
         }
     },
@@ -16,6 +28,7 @@ const categoriesService = {
             const response = await axiosInstance.post('/api/categorias', categoryData);
             return response.data;
         } catch (error) {
+            console.error('Error en createCategory:', error);
             throw error;
         }
     },
@@ -25,6 +38,7 @@ const categoriesService = {
             const response = await axiosInstance.put(`/api/categorias/${id}`, categoryData);
             return response.data;
         } catch (error) {
+            console.error('Error en updateCategory:', error);
             throw error;
         }
     },
@@ -34,6 +48,7 @@ const categoriesService = {
             const response = await axiosInstance.delete(`/api/categorias/${id}`);
             return response.data;
         } catch (error) {
+            console.error('Error en deleteCategory:', error);
             throw error;
         }
     }

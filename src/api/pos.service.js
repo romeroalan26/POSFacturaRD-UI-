@@ -35,7 +35,11 @@ const buildQuery = (params) => {
 const posService = {
     getProducts: async (params = {}) => {
         try {
-            const query = buildQuery(params);
+            // Forzar is_active=true en el POS
+            const query = buildQuery({
+                ...params,
+                is_active: true
+            });
             const response = await axiosInstance.get(`${API_ENDPOINTS.PRODUCTS.LIST}?${query}`);
             return response.data;
         } catch (error) {
