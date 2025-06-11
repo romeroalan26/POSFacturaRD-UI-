@@ -4,12 +4,24 @@ import Dashboard from "../pages/Dashboard";
 import MainLayout from "../components/Layout/MainLayout";
 import authService from "../api/auth.service";
 import Categorias from "../pages/Categorias";
+import AdminUsers from "../pages/AdminUsers";
 
 // Componente para proteger rutas
 const PrivateRoute = ({ children }) => {
   if (!authService.isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
+  return <MainLayout>{children}</MainLayout>;
+};
+
+// Componente para proteger rutas de administrador
+const AdminRoute = ({ children }) => {
+  const user = authService.getCurrentUser();
+
+  if (!user || user.user?.role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return <MainLayout>{children}</MainLayout>;
 };
 
@@ -65,6 +77,14 @@ const privateRoutes = [
       <PrivateRoute>
         <div>Ventas</div>
       </PrivateRoute>
+    ),
+  },
+  {
+    path: "/admin/users",
+    element: (
+      <AdminRoute>
+        <AdminUsers />
+      </AdminRoute>
     ),
   },
 ];

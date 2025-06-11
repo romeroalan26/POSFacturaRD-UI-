@@ -54,6 +54,14 @@ const MainLayout = ({ children }) => {
           >
             Ventas
           </Link>
+          {currentUser?.user?.role === "admin" && (
+            <Link
+              to="/admin/users"
+              className="group flex items-center px-2 py-2 text-base leading-6 font-medium rounded-md text-white hover:bg-gray-700"
+            >
+              Administración de Usuarios
+            </Link>
+          )}
         </nav>
       </div>
 

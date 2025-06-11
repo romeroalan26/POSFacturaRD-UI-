@@ -12,6 +12,7 @@ import MainLayout from "./components/Layout/MainLayout";
 import PuntoVenta from "./pages/PuntoVenta";
 import Categorias from "./pages/Categorias";
 import Ventas from "./pages/Ventas";
+import AdminUsers from "./pages/AdminUsers";
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -81,6 +82,14 @@ function App() {
           element={
             <PrivateRoute>
               <Ventas />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <PrivateRoute>
+              <AdminUsers />
             </PrivateRoute>
           }
         />
