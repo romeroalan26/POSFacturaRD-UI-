@@ -29,9 +29,11 @@ axiosInstance.interceptors.response.use(
             // Manejar errores específicos
             switch (error.response.status) {
                 case 401:
-                    // Token expirado o inválido
-                    localStorage.removeItem('token');
-                    window.location.href = '/login';
+                    // Solo redirigir si no estamos en la página de login
+                    if (!window.location.pathname.includes('/login')) {
+                        localStorage.removeItem('token');
+                        window.location.href = '/login';
+                    }
                     break;
                 case 403:
                     // No tiene permisos
