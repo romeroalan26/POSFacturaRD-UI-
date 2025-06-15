@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import salesService from "../api/sales.service";
+import reportsService from "../api/reports.service";
 
 function formatearFecha(fechaISO) {
   const fecha = new Date(fechaISO);
@@ -39,10 +40,12 @@ export default function Ventas() {
   const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState("list"); // 'list' o 'grid'
-  const [totalVentas, setTotalVentas] = useState(0);
-  const [totalIngresos, setTotalIngresos] = useState(0);
-  const [totalGanancias, setTotalGanancias] = useState(0);
-  const [margenPromedio, setMargenPromedio] = useState(0);
+  const [resumenGeneral, setResumenGeneral] = useState({
+    total_ventas: 0,
+    total_ingresos: 0,
+    ganancia_total: 0,
+    promedio_venta: 0,
+  });
   const [showDevolucionModal, setShowDevolucionModal] = useState(false);
   const [devolucionLoading, setDevolucionLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -51,8 +54,26 @@ export default function Ventas() {
 
   useEffect(() => {
     fetchVentas();
+    fetchResumenGeneral();
     // eslint-disable-next-line
   }, [page, size]);
+
+  const fetchResumenGeneral = async () => {
+    try {
+      const params = {
+        ...filtros,
+      };
+      Object.keys(params).forEach(
+        (k) => (params[k] === "" || params[k] === null) && delete params[k]
+      );
+      const res = await reportsService.getResumenGeneral(params);
+      if (res.data) {
+        setResumenGeneral(res.data);
+      }
+    } catch (err) {
+      console.error("Error al obtener resumen general:", err);
+    }
+  };
 
   const fetchVentas = async () => {
     setLoading(true);
@@ -69,22 +90,9 @@ export default function Ventas() {
       setVentas(res.data);
       setTotalPages(res.totalPages);
       setTotalElements(res.totalElements);
-
-      // Calcular totales
-      const totalVentas = res.data.length;
-      const totalIngresos = res.data.reduce(
-        (sum, venta) => sum + Number(venta.total_final),
-        0
-      );
-      setTotalVentas(totalVentas);
-      setTotalIngresos(totalIngresos);
-      // Nuevos campos
-      setTotalGanancias(res.ganancia_total_periodo || 0);
-      setMargenPromedio(res.margen_promedio_periodo || 0);
     } catch (err) {
       setVentas([]);
-      setTotalGanancias(0);
-      setMargenPromedio(0);
+      setError("Error al cargar las ventas");
     }
     setLoading(false);
   };
@@ -110,6 +118,7 @@ export default function Ventas() {
   const handleBuscar = () => {
     setPage(1);
     fetchVentas();
+    fetchResumenGeneral();
   };
 
   const abrirModal = async (venta) => {
@@ -184,7 +193,7 @@ export default function Ventas() {
                   Total Ventas
                 </p>
                 <p className="text-base sm:text-2xl font-bold text-blue-700">
-                  {totalVentas}
+                  {resumenGeneral.total_ventas}
                 </p>
               </div>
               <div className="bg-green-50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg">
@@ -192,7 +201,7 @@ export default function Ventas() {
                   Ingresos Totales
                 </p>
                 <p className="text-base sm:text-2xl font-bold text-green-700">
-                  {formatCurrency(totalIngresos)}
+                  {formatCurrency(resumenGeneral.total_ingresos)}
                 </p>
               </div>
               <div className="bg-indigo-50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg">
@@ -200,15 +209,15 @@ export default function Ventas() {
                   Ganancias Totales
                 </p>
                 <p className="text-base sm:text-2xl font-bold text-indigo-700">
-                  {formatCurrency(totalGanancias)}
+                  {formatCurrency(resumenGeneral.ganancia_total)}
                 </p>
               </div>
               <div className="bg-purple-50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg">
                 <p className="text-xs sm:text-sm text-purple-600 font-medium">
-                  Margen Promedio
+                  Promedio de Venta
                 </p>
                 <p className="text-base sm:text-2xl font-bold text-purple-700">
-                  {formatPercentage(margenPromedio)}
+                  {formatCurrency(resumenGeneral.promedio_venta)}
                 </p>
               </div>
             </div>
@@ -440,57 +449,95 @@ export default function Ventas() {
         )}
 
         {/* Paginación */}
-        <div className="mt-4 sm:mt-6 flex justify-center">
-          <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+        <div className="mt-4 sm:mt-6 flex items-center justify-between">
+          <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => setPage(page - 1)}
               disabled={page === 1}
-              className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-xs sm:text-sm font-medium ${
-                page === 1
-                  ? "text-gray-300 cursor-not-allowed"
-                  : "text-gray-500 hover:bg-gray-50"
-              }`}
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span className="sr-only">Anterior</span>
-              <svg
-                className="h-4 w-4 sm:h-5 sm:w-5"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              Anterior
             </button>
             <button
               onClick={() => setPage(page + 1)}
               disabled={page === totalPages}
-              className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-xs sm:text-sm font-medium ${
-                page === totalPages
-                  ? "text-gray-300 cursor-not-allowed"
-                  : "text-gray-500 hover:bg-gray-50"
-              }`}
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span className="sr-only">Siguiente</span>
-              <svg
-                className="h-4 w-4 sm:h-5 sm:w-5"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              Siguiente
             </button>
-          </nav>
+          </div>
+          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Mostrando{" "}
+                <span className="font-medium">{(page - 1) * size + 1}</span> a{" "}
+                <span className="font-medium">
+                  {Math.min(page * size, totalElements)}
+                </span>{" "}
+                de <span className="font-medium">{totalElements}</span> ventas
+              </p>
+            </div>
+            <div>
+              <nav
+                className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                aria-label="Pagination"
+              >
+                <button
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 1}
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="sr-only">Anterior</span>
+                  <svg
+                    className="h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setPage(i + 1)}
+                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                      page === i + 1
+                        ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                        : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage(page + 1)}
+                  disabled={page === totalPages}
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="sr-only">Siguiente</span>
+                  <svg
+                    className="h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
         </div>
       </div>
 
