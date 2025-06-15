@@ -93,6 +93,31 @@ const reportsService = {
         }
         return response.data;
     },
+
+    async getVentasPorCategoria(params = {}) {
+        const query = buildQuery(params);
+        const url = `/api/reportes/ventas-por-categoria${query ? `?${query}` : ''}`;
+        try {
+            const response = await axiosInstance.get(url);
+            if (response.data && response.data.data) {
+                return {
+                    ...response.data,
+                    data: response.data.data.map(item => ({
+                        ...item,
+                        total_ventas: Number(item.total_ventas) || 0,
+                        total_ingresos: Number(item.total_ingresos) || 0,
+                        total_productos_vendidos: Number(item.total_productos_vendidos) || 0,
+                        precio_promedio: Number(item.precio_promedio) || 0,
+                        ganancia_total: Number(item.ganancia_total) || 0,
+                        margen_ganancia: Number(item.margen_ganancia) || 0
+                    }))
+                };
+            }
+            return { data: [] };
+        } catch (error) {
+            return { data: [] };
+        }
+    },
 };
 
 export default reportsService; 
