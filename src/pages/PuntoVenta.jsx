@@ -321,38 +321,13 @@ const PuntoVenta = () => {
           </div>
         ) : (
           <>
-            {error && (
-              <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-red-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-red-700">{error}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Products Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
               {products.map((product) => (
                 <div
                   key={product.id}
                   onClick={() => addToCart(product)}
-                  className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden border border-gray-100"
+                  className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer overflow-hidden border border-gray-100"
                 >
                   <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-100">
                     <ProductImage
@@ -366,9 +341,22 @@ const PuntoVenta = () => {
                       {product.nombre}
                     </h3>
                     <div className="flex items-center justify-between">
-                      <span className="text-blue-600 font-semibold text-sm sm:text-base">
-                        {formatCurrency(product.precio)}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="text-blue-600 font-semibold text-sm sm:text-base">
+                          {formatCurrency(product.precio)}
+                        </span>
+                        <span
+                          className={`text-xs ${
+                            product.stock <= 0
+                              ? "text-red-500"
+                              : product.stock <= 5
+                              ? "text-yellow-500"
+                              : "text-green-500"
+                          }`}
+                        >
+                          Stock: {product.stock}
+                        </span>
+                      </div>
                       <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-sm">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
