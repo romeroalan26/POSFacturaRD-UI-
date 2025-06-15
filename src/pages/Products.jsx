@@ -32,6 +32,8 @@ const Products = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [viewMode, setViewMode] = useState("list");
+  const [sortField, setSortField] = useState("nombre");
+  const [sortDirection, setSortDirection] = useState("asc");
   const itemsPerPage = 10;
   const [successMessage, setSuccessMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -261,6 +263,51 @@ const Products = () => {
     }
   };
 
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortedProducts = () => {
+    return [...products].sort((a, b) => {
+      let valueA = a[sortField];
+      let valueB = b[sortField];
+
+      // Manejo especial para campos numéricos
+      if (
+        [
+          "precio",
+          "precio_compra",
+          "stock",
+          "stock_minimo",
+          "ganancia_unitaria",
+          "margen_ganancia",
+        ].includes(sortField)
+      ) {
+        valueA = Number(valueA) || 0;
+        valueB = Number(valueB) || 0;
+      }
+
+      // Manejo especial para el campo is_active
+      if (sortField === "is_active") {
+        valueA = valueA ? 1 : 0;
+        valueB = valueB ? 1 : 0;
+      }
+
+      if (valueA < valueB) {
+        return sortDirection === "asc" ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return sortDirection === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+  };
+
   if (loading && !products.length) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -417,7 +464,7 @@ const Products = () => {
 
       {viewMode === "grid" ? (
         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
-          {products.map((product) => (
+          {getSortedProducts().map((product) => (
             <div
               key={product.id}
               className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
@@ -483,32 +530,104 @@ const Products = () => {
                     <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Imagen
                     </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nombre
+                    <th
+                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("nombre")}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Nombre</span>
+                        {sortField === "nombre" && (
+                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </div>
                     </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Precio Venta
+                    <th
+                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("precio")}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Precio Venta</span>
+                        {sortField === "precio" && (
+                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </div>
                     </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Precio Compra
+                    <th
+                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("precio_compra")}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Precio Compra</span>
+                        {sortField === "precio_compra" && (
+                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </div>
                     </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ganancia
+                    <th
+                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("ganancia_unitaria")}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Ganancia</span>
+                        {sortField === "ganancia_unitaria" && (
+                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </div>
                     </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Margen
+                    <th
+                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("margen_ganancia")}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Margen</span>
+                        {sortField === "margen_ganancia" && (
+                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </div>
                     </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Stock
+                    <th
+                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("stock")}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Stock</span>
+                        {sortField === "stock" && (
+                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </div>
                     </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Stock Mínimo
+                    <th
+                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("stock_minimo")}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Stock Mínimo</span>
+                        {sortField === "stock_minimo" && (
+                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </div>
                     </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Categoría
+                    <th
+                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("categoria_id")}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Categoría</span>
+                        {sortField === "categoria_id" && (
+                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </div>
                     </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Estado
+                    <th
+                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("is_active")}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Estado</span>
+                        {sortField === "is_active" && (
+                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </div>
                     </th>
                     <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Acciones
@@ -516,8 +635,11 @@ const Products = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {products.map((product) => (
-                    <tr key={product.id}>
+                  {getSortedProducts().map((product) => (
+                    <tr
+                      key={product.id}
+                      className="hover:bg-gray-50 transition-colors duration-150"
+                    >
                       <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                         <ProductImage
                           imageName={product.imagen}
