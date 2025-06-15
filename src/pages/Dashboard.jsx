@@ -12,6 +12,8 @@ import {
   LineChart,
   Line,
   CartesianGrid,
+  AreaChart,
+  Area,
 } from "recharts";
 import {
   Chart as ChartJS,
@@ -20,6 +22,7 @@ import {
   Legend,
 } from "chart.js";
 import { Pie } from "react-chartjs-2";
+import Accordion from "../components/Accordion";
 
 ChartJS.register(ArcElement, ChartTooltip, Legend);
 
@@ -51,6 +54,47 @@ const Dashboard = () => {
   const [productosBajoStock, setProductosBajoStock] = useState([]);
   const [ganancias, setGanancias] = useState([]);
   const [ventasPorCategoria, setVentasPorCategoria] = useState([]);
+  const [resumenPorDia, setResumenPorDia] = useState([]);
+
+  // Función para obtener datos del resumen general por rangos de fechas
+  const fetchResumenPorDia = async () => {
+    try {
+      const startDate = new Date(dateRange.fecha_inicio);
+      const endDate = new Date(dateRange.fecha_fin);
+      const days = [];
+      const resumenData = [];
+
+      // Crear array de días entre fecha inicio y fin
+      for (
+        let d = new Date(startDate);
+        d <= endDate;
+        d.setDate(d.getDate() + 1)
+      ) {
+        days.push(new Date(d));
+      }
+
+      // Obtener datos para cada día
+      for (let i = 0; i < days.length; i++) {
+        const currentDate = days[i].toISOString().split("T")[0];
+        const response = await reportsService.getResumenGeneral({
+          fecha_inicio: currentDate,
+          fecha_fin: currentDate,
+        });
+
+        if (response.data) {
+          resumenData.push({
+            fecha: currentDate,
+            ingresos: Number(response.data.total_ingresos) || 0,
+            gastos: Number(response.data.total_gastos) || 0,
+          });
+        }
+      }
+
+      setResumenPorDia(resumenData);
+    } catch (error) {
+      console.error("Error al obtener resumen por día:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,6 +122,9 @@ const Dashboard = () => {
         setGanancias(gananciasData.data);
         setProductosBajoStock(stockData.data);
         setVentasPorCategoria(ventasCategoriaData.data || []);
+
+        // Obtener datos del resumen por día
+        await fetchResumenPorDia();
       } catch (error) {
         setError(error.message);
       } finally {
@@ -161,171 +208,399 @@ const Dashboard = () => {
 
       {/* KPIs */}
       {resumenGeneral && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <div className="bg-gradient-to-br from-green-500 to-green-600 shadow rounded-lg p-3 md:p-4 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-80">Total Ingresos</p>
-                <p className="text-xl md:text-2xl font-bold mt-1">
+        <Accordion title="Resumen General" defaultOpen={true}>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+              {/* Ingresos Totales */}
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 shadow-sm border border-green-100">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-green-800">
+                    Ingresos Totales
+                  </h3>
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <svg
+                      className="w-5 h-5 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-green-900">
                   {formatCurrency(resumenGeneral.total_ingresos)}
                 </p>
+                <div className="mt-2 flex items-center text-sm">
+                  <span className="text-green-600 font-medium">
+                    Total de ventas: {resumenGeneral.total_ventas}
+                  </span>
+                </div>
               </div>
-              <div className="bg-white/20 p-2 md:p-3 rounded-full">
-                <svg
-                  className="w-5 h-5 md:w-6 md:h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-gradient-to-br from-red-500 to-red-600 shadow rounded-lg p-3 md:p-4 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-80">Total Gastos</p>
-                <p className="text-xl md:text-2xl font-bold mt-1">
-                  {formatCurrency(resumenGeneral.total_gastos || 0)}
+              {/* Gastos Totales */}
+              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 shadow-sm border border-red-100">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-red-800">
+                    Gastos Totales
+                  </h3>
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <svg
+                      className="w-5 h-5 text-red-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-red-900">
+                  {formatCurrency(resumenGeneral.total_gastos)}
                 </p>
+                <div className="mt-2 flex items-center text-sm">
+                  <span className="text-red-600 font-medium">
+                    Días con gastos: {resumenGeneral.dias_con_ventas}
+                  </span>
+                </div>
               </div>
-              <div className="bg-white/20 p-2 md:p-3 rounded-full">
-                <svg
-                  className="w-5 h-5 md:w-6 md:h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 shadow rounded-lg p-3 md:p-4 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-80">Ganancia Total</p>
-                <p className="text-xl md:text-2xl font-bold mt-1">
-                  {formatCurrency(resumenGeneral.ganancia_total || 0)}
+              {/* Ganancia Total */}
+              <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-4 shadow-sm border border-indigo-100">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-indigo-800">
+                    Ganancia Total
+                  </h3>
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <svg
+                      className="w-5 h-5 text-indigo-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-indigo-900">
+                  {formatCurrency(resumenGeneral.ganancia_total)}
                 </p>
+                <div className="mt-2 flex items-center text-sm">
+                  <span className="text-indigo-600 font-medium">
+                    Margen:{" "}
+                    {(
+                      (resumenGeneral.ganancia_total /
+                        resumenGeneral.total_ingresos) *
+                      100
+                    ).toFixed(1)}
+                    %
+                  </span>
+                </div>
               </div>
-              <div className="bg-white/20 p-2 md:p-3 rounded-full">
-                <svg
-                  className="w-5 h-5 md:w-6 md:h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 shadow rounded-lg p-3 md:p-4 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-80">Total Ventas</p>
-                <p className="text-xl md:text-2xl font-bold mt-1">
-                  {resumenGeneral.total_ventas}
+              {/* Promedio de Venta */}
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 shadow-sm border border-purple-100">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-purple-800">
+                    Promedio de Venta
+                  </h3>
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <svg
+                      className="w-5 h-5 text-purple-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-purple-900">
+                  {formatCurrency(resumenGeneral.promedio_venta)}
                 </p>
+                <div className="mt-2 flex items-center text-sm">
+                  <span className="text-purple-600 font-medium">
+                    Productos vendidos:{" "}
+                    {resumenGeneral.total_productos_vendidos}
+                  </span>
+                </div>
               </div>
-              <div className="bg-white/20 p-2 md:p-3 rounded-full">
-                <svg
-                  className="w-5 h-5 md:w-6 md:h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
+            </div>
+
+            {/* Gráficos del Resumen General */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Gráfico de Tendencias */}
+              <div className="bg-white rounded-lg p-4 shadow">
+                <h4 className="text-lg font-semibold mb-4">
+                  Tendencia de Ventas
+                </h4>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={ventasDiarias}
+                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                    >
+                      <defs>
+                        <linearGradient
+                          id="colorVentas"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="#8b5cf6"
+                            stopOpacity={0.8}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="#8b5cf6"
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="dia"
+                        tick={{ fontSize: 12 }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => formatCurrency(value)}
+                      />
+                      <Tooltip
+                        formatter={(value) => formatCurrency(value)}
+                        labelFormatter={(label) => `Fecha: ${label}`}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="total_monto"
+                        name="Monto Total"
+                        stroke="#8b5cf6"
+                        fillOpacity={1}
+                        fill="url(#colorVentas)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Gráfico de Ingresos vs Gastos */}
+              <div className="bg-white rounded-lg p-4 shadow">
+                <h4 className="text-lg font-semibold mb-4">
+                  Ingresos vs Gastos
+                </h4>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={resumenPorDia}
+                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="fecha"
+                        tick={{ fontSize: 12 }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                      />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip
+                        formatter={(value) => formatCurrency(value)}
+                        labelFormatter={(label) => `Fecha: ${label}`}
+                      />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="ingresos"
+                        name="Ingresos"
+                        stroke="#10b981"
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="gastos"
+                        name="Gastos"
+                        stroke="#ef4444"
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </Accordion>
       )}
 
       {/* Productos Más Vendidos */}
-      <div className="bg-white shadow rounded-lg p-3 md:p-4">
-        <h3 className="text-lg font-semibold mb-3 md:mb-4">
-          Productos Más Vendidos
-        </h3>
-        <div className="overflow-x-auto -mx-3 md:mx-0">
-          <div className="inline-block min-w-full align-middle">
+      <Accordion title="Productos Más Vendidos">
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Producto
                   </th>
-                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Categoría
                   </th>
-                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total Vendido
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Unidades Vendidas
                   </th>
-                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Ingresos
                   </th>
-                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total Ventas
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Ganancia
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {productosMasVendidos.map((producto) => (
-                  <tr key={producto.id}>
-                    <td className="px-3 md:px-6 py-2 md:py-4 whitespace-nowrap text-sm text-gray-900">
-                      {producto.nombre}
+                {productosMasVendidos.map((producto, index) => (
+                  <tr
+                    key={producto.id}
+                    className="hover:bg-gray-50 transition-colors duration-150"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                          <span className="text-indigo-600 font-semibold">
+                            {index + 1}
+                          </span>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {producto.nombre}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ID: {producto.id}
+                          </div>
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-3 md:px-6 py-2 md:py-4 whitespace-nowrap text-sm text-gray-500">
-                      {producto.categoria}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                        {producto.categoria}
+                      </span>
                     </td>
-                    <td className="px-3 md:px-6 py-2 md:py-4 whitespace-nowrap text-sm text-gray-900">
-                      {producto.total_vendido}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                          <div
+                            className="bg-blue-600 h-2.5 rounded-full"
+                            style={{
+                              width: `${
+                                (producto.total_ventas /
+                                  productosMasVendidos[0].total_ventas) *
+                                100
+                              }%`,
+                            }}
+                          ></div>
+                        </div>
+                        <span className="text-sm text-gray-900 font-medium">
+                          {producto.total_ventas}
+                        </span>
+                      </div>
                     </td>
-                    <td className="px-3 md:px-6 py-2 md:py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatCurrency(producto.total_ingresos)}
                     </td>
-                    <td className="px-3 md:px-6 py-2 md:py-4 whitespace-nowrap text-sm text-gray-900">
-                      {producto.total_ventas}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <span
+                          className={`text-sm font-medium ${
+                            producto.ganancia_total >= 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {formatCurrency(producto.ganancia_total)}
+                        </span>
+                        <span className="ml-2 text-xs text-gray-500">
+                          ({producto.margen_ganancia}%)
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          {productosMasVendidos.length === 0 && (
+            <div className="text-center py-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                <svg
+                  className="w-8 h-8 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">
+                No hay datos disponibles
+              </h3>
+              <p className="text-gray-500">
+                No se encontraron productos vendidos en el período seleccionado.
+              </p>
+            </div>
+          )}
         </div>
-      </div>
+      </Accordion>
 
       {/* Productos Bajo Stock */}
-      <div className="bg-white shadow rounded-lg p-3 md:p-4">
-        <h3 className="text-lg font-semibold mb-3 md:mb-4">
-          Productos Bajo Stock
-        </h3>
+      <Accordion title="Productos Bajo Stock">
         <div className="overflow-x-auto -mx-3 md:mx-0">
           <div className="inline-block min-w-full align-middle">
             <table className="min-w-full divide-y divide-gray-200">
@@ -372,13 +647,10 @@ const Dashboard = () => {
             </table>
           </div>
         </div>
-      </div>
+      </Accordion>
 
       {/* Gráfico de Ganancias por Producto */}
-      <div className="bg-white shadow rounded-lg p-3 md:p-4">
-        <h3 className="text-lg font-semibold mb-3 md:mb-4">
-          Ganancias por Producto
-        </h3>
+      <Accordion title="Ganancias por Producto">
         <div className="h-64 md:h-96">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -414,13 +686,10 @@ const Dashboard = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </Accordion>
 
       {/* Gráfico Circular de Ventas por Categoría */}
-      <div className="bg-white shadow rounded-lg p-3 md:p-4">
-        <h3 className="text-lg font-semibold mb-3 md:mb-4">
-          Ventas por Categoría
-        </h3>
+      <Accordion title="Ventas por Categoría">
         <div className="h-64 md:h-96 flex items-center justify-center">
           {ventasPorCategoria && ventasPorCategoria.length > 0 ? (
             <Pie
@@ -472,7 +741,7 @@ const Dashboard = () => {
             <div className="text-gray-500">No hay datos disponibles</div>
           )}
         </div>
-      </div>
+      </Accordion>
     </div>
   );
 };
