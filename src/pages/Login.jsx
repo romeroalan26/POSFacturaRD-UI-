@@ -11,6 +11,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const companyName = import.meta.env.VITE_COMPANY_NAME || "Sistema de Gestión";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,10 +44,10 @@ const Login = () => {
         <div className="text-center mb-8">
           <img
             src="/src/assets/images/icon.png"
-            alt="CORO 69 Logo"
+            alt={`${companyName} Logo`}
             className="w-32 h-32 mx-auto mb-4 rounded-full object-cover"
           />
-          <p className="text-purple-200 text-lg">Sistema de Gestión</p>
+          <p className="text-purple-200 text-lg">{companyName}</p>
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>

@@ -9,6 +9,7 @@ const MainLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user: currentUser } = useAuth();
+  const headerTitle = import.meta.env.VITE_HEADER_TITLE || "Sistema de Gestión";
 
   // Función para obtener el título de la página actual
   const getPageTitle = () => {
@@ -29,7 +30,7 @@ const MainLayout = ({ children }) => {
       case "/gastos":
         return "Gastos";
       default:
-        return "Coro 69";
+        return headerTitle;
     }
   };
 
@@ -81,6 +82,13 @@ const MainLayout = ({ children }) => {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
+        {/* System Title */}
+        <div className="px-4 py-4 border-b border-gray-700">
+          <h1 className="text-xl font-bold text-white text-center">
+            {headerTitle}
+          </h1>
+        </div>
+
         {/* User Profile */}
         <div className="px-4 py-4 border-b border-gray-700">
           <div className="flex items-center space-x-3">
