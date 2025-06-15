@@ -187,8 +187,20 @@ const AdminUsers = () => {
       <div className="flex justify-end items-center mb-4 sm:mb-6">
         <button
           onClick={() => setShowNewUserForm(true)}
-          className="w-full sm:w-auto bg-indigo-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-indigo-700 text-sm sm:text-base"
+          className="w-full sm:w-auto bg-indigo-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-indigo-700 text-sm sm:text-base flex items-center gap-2"
         >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+              clipRule="evenodd"
+            />
+          </svg>
           Nuevo Usuario
         </button>
       </div>
@@ -214,7 +226,7 @@ const AdminUsers = () => {
                 <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Nombre
                 </th>
-                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                   Email
                 </th>
                 <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -229,9 +241,16 @@ const AdminUsers = () => {
               {users.map((user) => (
                 <tr key={user.id}>
                   <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm">
-                    {user.nombre}
+                    <div className="flex flex-col">
+                      <span className="font-medium text-gray-900">
+                        {user.nombre}
+                      </span>
+                      <span className="text-gray-500 sm:hidden">
+                        {user.email}
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm">
+                  <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm hidden sm:table-cell">
                     {user.email}
                   </td>
                   <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
@@ -253,21 +272,57 @@ const AdminUsers = () => {
                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                       <button
                         onClick={() => handleViewPermissions(user.id)}
-                        className="text-indigo-600 hover:text-indigo-900 text-sm"
+                        className="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50 transition-colors duration-200"
+                        title="Ver Permisos"
                       >
-                        Ver Permisos
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
                       </button>
                       <button
                         onClick={() => handleResetPassword(user.id)}
-                        className="text-green-600 hover:text-green-900 text-sm"
+                        className="text-green-600 hover:text-green-900 p-2 rounded-full hover:bg-green-50 transition-colors duration-200"
+                        title="Reiniciar Contraseña"
                       >
-                        Reiniciar Contraseña
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
                       </button>
                       <button
                         onClick={() => handleDeleteUser(user)}
-                        className="text-red-600 hover:text-red-900 text-sm"
+                        className="text-red-600 hover:text-red-900 p-2 rounded-full hover:bg-red-50 transition-colors duration-200"
+                        title="Eliminar Usuario"
                       >
-                        Eliminar
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
                       </button>
                     </div>
                   </td>
@@ -286,11 +341,13 @@ const AdminUsers = () => {
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Permisos del Usuario
               </h3>
-              <div className="mt-2 px-4 sm:px-7 py-3 max-h-[60vh] overflow-y-auto">
+              <div className="mt-2 px-2 sm:px-4 py-3 max-h-[60vh] overflow-y-auto">
                 {Object.entries(permissions).map(([resource, actions]) => (
                   <div key={resource} className="mb-4">
-                    <h4 className="font-medium capitalize">{resource}</h4>
-                    <div className="ml-4">
+                    <h4 className="font-medium capitalize text-sm sm:text-base">
+                      {resource}
+                    </h4>
+                    <div className="ml-2 sm:ml-4">
                       {Object.entries(actions).map(([action, value]) => (
                         <div key={action} className="flex items-center">
                           <input
@@ -299,7 +356,7 @@ const AdminUsers = () => {
                             disabled
                             className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                           />
-                          <label className="ml-2 text-sm text-gray-700 capitalize">
+                          <label className="ml-2 text-xs sm:text-sm text-gray-700 capitalize">
                             {action}
                           </label>
                         </div>
@@ -330,13 +387,13 @@ const AdminUsers = () => {
                 Reiniciar Contraseña
               </h3>
               {passwordError && (
-                <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded relative text-sm">
+                <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded relative text-xs sm:text-sm">
                   <span className="block sm:inline">{passwordError}</span>
                 </div>
               )}
               <form onSubmit={handleResetPasswordSubmit}>
                 <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                  <label className="block text-gray-700 text-xs sm:text-sm font-bold mb-2">
                     Nueva Contraseña
                   </label>
                   <input
@@ -349,13 +406,13 @@ const AdminUsers = () => {
                       });
                       setPasswordError(null);
                     }}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs sm:text-sm"
                     required
                     minLength={6}
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                  <label className="block text-gray-700 text-xs sm:text-sm font-bold mb-2">
                     Confirmar Contraseña
                   </label>
                   <input
@@ -368,25 +425,22 @@ const AdminUsers = () => {
                       });
                       setPasswordError(null);
                     }}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs sm:text-sm"
                     required
                     minLength={6}
                   />
                 </div>
-                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-0">
+                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
                   <button
                     type="button"
-                    onClick={() => {
-                      setShowResetPasswordModal(false);
-                      setPasswordError(null);
-                    }}
-                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                    onClick={() => setShowResetPasswordModal(false)}
+                    className="w-full sm:w-auto px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md"
+                    className="w-full sm:w-auto px-4 py-2 text-xs sm:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md"
                   >
                     Reiniciar Contraseña
                   </button>
@@ -405,9 +459,28 @@ const AdminUsers = () => {
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Nuevo Usuario
               </h3>
+              <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-700 px-3 py-2 rounded text-xs sm:text-sm">
+                <p className="flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  El usuario será creado con el rol de cajero por defecto.
+                  Podrás cambiar su rol posteriormente desde la lista de
+                  usuarios.
+                </p>
+              </div>
               <form onSubmit={handleNewUserSubmit}>
                 <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                  <label className="block text-gray-700 text-xs sm:text-sm font-bold mb-2">
                     Nombre
                   </label>
                   <input
@@ -416,12 +489,12 @@ const AdminUsers = () => {
                     onChange={(e) =>
                       setNewUser({ ...newUser, nombre: e.target.value })
                     }
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs sm:text-sm"
                     required
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                  <label className="block text-gray-700 text-xs sm:text-sm font-bold mb-2">
                     Email
                   </label>
                   <input
@@ -430,12 +503,12 @@ const AdminUsers = () => {
                     onChange={(e) =>
                       setNewUser({ ...newUser, email: e.target.value })
                     }
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs sm:text-sm"
                     required
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                  <label className="block text-gray-700 text-xs sm:text-sm font-bold mb-2">
                     Contraseña
                   </label>
                   <input
@@ -444,22 +517,22 @@ const AdminUsers = () => {
                     onChange={(e) =>
                       setNewUser({ ...newUser, password: e.target.value })
                     }
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs sm:text-sm"
                     required
                     minLength={6}
                   />
                 </div>
-                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-0">
+                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
                   <button
                     type="button"
                     onClick={() => setShowNewUserForm(false)}
-                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                    className="w-full sm:w-auto px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md"
+                    className="w-full sm:w-auto px-4 py-2 text-xs sm:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md"
                   >
                     Crear Usuario
                   </button>
@@ -536,13 +609,13 @@ const AdminUsers = () => {
                 <h3 className="text-lg font-medium leading-6 text-gray-900 mt-4">
                   Confirmar Eliminación
                 </h3>
-                <div className="mt-2 px-4 sm:px-7 py-3">
-                  <p className="text-gray-600 mb-4 text-sm sm:text-base">
+                <div className="mt-2 px-2 sm:px-4 py-3">
+                  <p className="text-gray-600 mb-4 text-xs sm:text-sm">
                     ¿Estás seguro que deseas eliminar al usuario{" "}
                     <span className="font-semibold">{userToDelete.nombre}</span>
                     ?
                   </p>
-                  <p className="text-sm text-red-500 mb-4">
+                  <p className="text-xs sm:text-sm text-red-500 mb-4">
                     Esta acción no se puede deshacer y eliminará permanentemente
                     el usuario y todos sus datos asociados.
                   </p>
@@ -554,13 +627,13 @@ const AdminUsers = () => {
                     setShowDeleteConfirmModal(false);
                     setUserToDelete(null);
                   }}
-                  className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                  className="w-full sm:w-auto px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={confirmDeleteUser}
-                  className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+                  className="w-full sm:w-auto px-4 py-2 text-xs sm:text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
                 >
                   Eliminar Usuario
                 </button>
