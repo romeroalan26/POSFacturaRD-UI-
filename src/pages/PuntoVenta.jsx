@@ -324,166 +324,141 @@ const PuntoVenta = () => {
         ) : (
           <>
             {/* Products Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  onClick={() => addToCart(product)}
-                  className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer overflow-hidden border border-gray-100"
-                >
-                  <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-100">
-                    <ProductImage
-                      imageName={product.imagen}
-                      alt={product.nombre}
-                      className="w-full h-full object-cover object-center group-hover:opacity-90 transition-opacity duration-200"
-                    />
-                  </div>
-                  <div className="p-3 border-t border-gray-100">
-                    <h3 className="font-medium text-gray-900 text-sm line-clamp-2 mb-1.5">
-                      {product.nombre}
-                    </h3>
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-blue-600 font-semibold text-sm sm:text-base">
-                          {formatCurrency(product.precio)}
-                        </span>
-                        <span
-                          className={`text-xs ${
-                            product.stock <= 0
-                              ? "text-red-500"
-                              : product.stock <= 5
-                              ? "text-yellow-500"
-                              : "text-green-500"
-                          }`}
-                        >
-                          Stock: {product.stock}
-                        </span>
+            <div className="w-full max-w-[2000px] mx-auto px-2 sm:px-4 lg:px-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
+                {products.map((product) => (
+                  <div
+                    key={product.id}
+                    onClick={() => addToCart(product)}
+                    className="group bg-white rounded-2xl overflow-hidden cursor-pointer hover:shadow-md"
+                  >
+                    {/* Image Container */}
+                    <div className="relative aspect-square overflow-hidden">
+                      <ProductImage
+                        imageName={product.imagen}
+                        alt={product.nombre}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Stock Indicator */}
+                      <div
+                        className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-medium ${
+                          product.stock <= 0
+                            ? "bg-red-500/90 text-white"
+                            : product.stock <= 5
+                            ? "bg-yellow-500/90 text-white"
+                            : "bg-green-500/90 text-white"
+                        }`}
+                      >
+                        {product.stock <= 0 ? "Sin stock" : `${product.stock}`}
                       </div>
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-sm">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-3 w-3 sm:h-4 sm:w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                          />
-                        </svg>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-3">
+                      <h3 className="font-medium text-gray-800 text-sm mb-1.5 line-clamp-2">
+                        {product.nombre}
+                      </h3>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <span className="text-base font-bold text-blue-600">
+                            {formatCurrency(product.precio)}
+                          </span>
+                          {product.con_itbis && (
+                            <span className="text-[10px] text-gray-500">
+                              Incluye ITBIS
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Add to Cart Icon */}
+                        <div className="w-7 h-7 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                            />
+                          </svg>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="mt-6 flex items-center justify-between">
-                <div className="flex-1 flex justify-between sm:hidden">
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Anterior
-                  </button>
-                  <button
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    disabled={currentPage === totalPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Siguiente
-                  </button>
-                </div>
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Mostrando{" "}
-                      <span className="font-medium">
-                        {(currentPage - 1) * productsPerPage + 1}
-                      </span>{" "}
-                      a{" "}
-                      <span className="font-medium">
-                        {Math.min(currentPage * productsPerPage, totalProducts)}
-                      </span>{" "}
-                      de <span className="font-medium">{totalProducts}</span>{" "}
-                      productos
-                    </p>
+              {/* Modern Pagination */}
+              <div className="mt-4 px-2">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-sm text-gray-600">
+                    Mostrando {(currentPage - 1) * productsPerPage + 1} a{" "}
+                    {Math.min(currentPage * productsPerPage, totalProducts)} de{" "}
+                    {totalProducts} productos
                   </div>
-                  <div>
-                    <nav
-                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                      aria-label="Pagination"
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <button
-                        onClick={() =>
-                          setCurrentPage((p) => Math.max(1, p - 1))
+                      Anterior
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {[...Array(totalPages)].map((_, index) => {
+                        const pageNumber = index + 1;
+                        if (
+                          pageNumber === 1 ||
+                          pageNumber === totalPages ||
+                          (pageNumber >= currentPage - 1 &&
+                            pageNumber <= currentPage + 1)
+                        ) {
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => setCurrentPage(pageNumber)}
+                              className={`w-8 h-8 text-sm font-medium rounded-lg ${
+                                currentPage === pageNumber
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                              }`}
+                            >
+                              {pageNumber}
+                            </button>
+                          );
+                        } else if (
+                          pageNumber === currentPage - 2 ||
+                          pageNumber === currentPage + 2
+                        ) {
+                          return (
+                            <span key={pageNumber} className="text-gray-500">
+                              ...
+                            </span>
+                          );
                         }
-                        disabled={currentPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span className="sr-only">Anterior</span>
-                        <svg
-                          className="h-5 w-5"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                      {[...Array(totalPages)].map((_, i) => (
-                        <button
-                          key={i + 1}
-                          onClick={() => setCurrentPage(i + 1)}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                            currentPage === i + 1
-                              ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                          }`}
-                        >
-                          {i + 1}
-                        </button>
-                      ))}
-                      <button
-                        onClick={() =>
-                          setCurrentPage((p) => Math.min(totalPages, p + 1))
-                        }
-                        disabled={currentPage === totalPages}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span className="sr-only">Siguiente</span>
-                        <svg
-                          className="h-5 w-5"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                    </nav>
+                        return null;
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Siguiente
+                    </button>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
           </>
         )}
       </div>
@@ -493,57 +468,41 @@ const PuntoVenta = () => {
 
       {/* Cart Sidebar */}
       <div
-        className={`fixed inset-0 z-50 ${
-          showCart ? "pointer-events-auto" : "pointer-events-none"
+        className={`fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-50 ${
+          showCart ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Backdrop */}
-        <div
-          className={`absolute inset-0 bg-black transition-opacity duration-300 ${
-            showCart ? "opacity-50" : "opacity-0"
-          }`}
-          onClick={() => setShowCart(false)}
-        />
-
-        {/* Sidebar */}
-        <div
-          className={`absolute right-0 top-0 h-full w-full sm:max-w-md bg-white shadow-xl transform transition-transform duration-300 flex flex-col ${
-            showCart ? "translate-x-0" : "translate-x-full"
-          }`}
-        >
-          {/* Header */}
-          <div className="px-4 py-4 sm:px-6 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-900">
-                Carrito de Compras
-              </h2>
-              <button
-                onClick={() => setShowCart(false)}
-                className="text-gray-400 hover:text-gray-500"
+        <div className="h-full flex flex-col">
+          {/* Cart Header */}
+          <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Carrito de Compras
+            </h2>
+            <button
+              onClick={() => setShowCart(false)}
+              className="p-2 text-gray-400 hover:text-gray-500"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <span className="sr-only">Cerrar</span>
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
 
           {/* Cart Items */}
           <div className="flex-1 overflow-y-auto px-4 py-3">
             {cart.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center mb-4">
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                   <svg
                     className="w-8 h-8 text-gray-400"
                     fill="none"
@@ -566,23 +525,23 @@ const PuntoVenta = () => {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {cart.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-start space-x-4 bg-white rounded-lg p-3 border border-gray-100"
+                    className="flex items-start space-x-3 bg-white rounded-xl p-3 border border-gray-100"
                   >
-                    <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                    <div className="flex-shrink-0 w-16 h-16 bg-gray-50 rounded-lg overflow-hidden">
                       <ProductImage
                         imageName={item.imagen}
                         alt={item.nombre}
-                        className="w-full h-full object-cover object-center"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-start justify-between mb-1">
                         <div className="flex-1">
-                          <h3 className="font-medium text-gray-900 text-sm mb-1 leading-tight">
+                          <h3 className="font-medium text-gray-900 text-sm mb-0.5">
                             {item.nombre}
                           </h3>
                           <p className="text-xs text-gray-500">
@@ -594,50 +553,35 @@ const PuntoVenta = () => {
                             e.stopPropagation();
                             removeFromCart(item.id);
                           }}
-                          className="text-gray-400 hover:text-red-500 transition-colors p-1"
-                          title="Eliminar producto"
+                          className="text-gray-400 hover:text-red-500 p-1"
                         >
                           <svg
-                            className="w-4 h-4"
+                            className="h-4 w-4"
                             fill="none"
-                            stroke="currentColor"
                             viewBox="0 0 24 24"
+                            stroke="currentColor"
                           >
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
                             />
                           </svg>
                         </button>
                       </div>
-
-                      {/* Quantity Controls & Price */}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2 bg-gray-50 rounded-lg p-1">
+                        <div className="flex items-center space-x-2">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               updateQuantity(item.id, item.cantidad - 1);
                             }}
-                            className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-md bg-white border hover:bg-gray-50 transition-colors"
+                            className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50"
                           >
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M20 12H4"
-                              />
-                            </svg>
+                            -
                           </button>
-                          <span className="w-6 sm:w-7 text-center font-medium text-gray-900 text-sm">
+                          <span className="text-sm font-medium text-gray-900 w-8 text-center">
                             {item.cantidad}
                           </span>
                           <button
@@ -645,32 +589,14 @@ const PuntoVenta = () => {
                               e.stopPropagation();
                               updateQuantity(item.id, item.cantidad + 1);
                             }}
-                            className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-md bg-white border hover:bg-gray-50 transition-colors"
+                            className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50"
                           >
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M12 4v16m8-8H4"
-                              />
-                            </svg>
+                            +
                           </button>
                         </div>
-
-                        <div className="text-right">
-                          <p className="text-sm sm:text-base font-bold text-blue-600">
-                            {formatCurrency(item.precio * item.cantidad)}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {formatCurrency(item.precio)} c/u
-                          </p>
-                        </div>
+                        <span className="text-sm font-semibold text-blue-600">
+                          {formatCurrency(item.precio * item.cantidad)}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -679,164 +605,70 @@ const PuntoVenta = () => {
             )}
           </div>
 
-          {/* Footer - Checkout Section */}
+          {/* Cart Footer */}
           {cart.length > 0 && (
-            <div className="border-t bg-white p-4 space-y-4">
-              {/* Totals */}
-              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>Subtotal</span>
-                  <span className="font-medium">
+            <div className="border-t border-gray-100 px-4 py-4">
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="font-medium text-gray-900">
                     {formatCurrency(calculateSubtotal())}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>ITBIS (18%)</span>
-                  <span className="font-medium">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">ITBIS</span>
+                  <span className="font-medium text-gray-900">
                     {formatCurrency(calculateITBIS())}
                   </span>
                 </div>
-                <div className="border-t border-gray-200 pt-2 mt-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-base sm:text-lg font-bold text-gray-900">
-                      Total
-                    </span>
-                    <span className="text-lg sm:text-xl font-bold text-blue-600">
-                      {formatCurrency(calculateTotal())}
-                    </span>
-                  </div>
+                <div className="flex justify-between text-base font-semibold">
+                  <span className="text-gray-900">Total</span>
+                  <span className="text-blue-600">
+                    {formatCurrency(calculateTotal())}
+                  </span>
                 </div>
-              </div>
 
-              {/* Payment Method Selection */}
-              <div className="bg-white border border-gray-100 rounded-xl p-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Método de Pago
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  <button
-                    onClick={() => setPaymentMethod("efectivo")}
-                    className={`p-2 sm:p-3 rounded-lg border-2 text-center transition-all ${
-                      paymentMethod === "efectivo"
-                        ? "border-blue-600 bg-blue-50 text-blue-700"
-                        : "border-gray-100 hover:border-blue-200"
-                    }`}
-                  >
-                    <svg
-                      className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setPaymentMethod("efectivo")}
+                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium ${
+                        paymentMethod === "efectivo"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                    <span className="text-xs sm:text-sm font-medium">
                       Efectivo
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setPaymentMethod("tarjeta")}
-                    className={`p-2 sm:p-3 rounded-lg border-2 text-center transition-all ${
-                      paymentMethod === "tarjeta"
-                        ? "border-blue-600 bg-blue-50 text-blue-700"
-                        : "border-gray-100 hover:border-blue-200"
-                    }`}
-                  >
-                    <svg
-                      className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    </button>
+                    <button
+                      onClick={() => setPaymentMethod("tarjeta")}
+                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium ${
+                        paymentMethod === "tarjeta"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                      />
-                    </svg>
-                    <span className="text-xs sm:text-sm font-medium">
                       Tarjeta
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setPaymentMethod("transferencia")}
-                    className={`p-2 sm:p-3 rounded-lg border-2 text-center transition-all ${
-                      paymentMethod === "transferencia"
-                        ? "border-blue-600 bg-blue-50 text-blue-700"
-                        : "border-gray-100 hover:border-blue-200"
-                    }`}
-                  >
-                    <svg
-                      className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    </button>
+                    <button
+                      onClick={() => setPaymentMethod("transferencia")}
+                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium ${
+                        paymentMethod === "transferencia"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                      />
-                    </svg>
-                    <span className="text-xs sm:text-sm font-medium">
                       Transferencia
-                    </span>
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleCheckout}
+                    className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                  >
+                    Completar Venta
                   </button>
                 </div>
-              </div>
-
-              {/* Checkout Button */}
-              <button
-                onClick={handleCheckout}
-                disabled={loading}
-                className="w-full bg-blue-600 text-white py-2.5 sm:py-3 rounded-lg font-medium flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
-                    <span>Procesando...</span>
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      className="w-4 h-4 sm:w-5 sm:h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                    <span>Confirmar Pago</span>
-                  </>
-                )}
-              </button>
-
-              {/* Quick Actions */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCart([])}
-                  className="flex-1 bg-gray-100 text-gray-700 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-200 transition-colors"
-                >
-                  Vaciar Carrito
-                </button>
-                <button
-                  onClick={() => setShowCart(false)}
-                  className="flex-1 bg-gray-100 text-gray-700 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-200 transition-colors"
-                >
-                  Seguir Comprando
-                </button>
               </div>
             </div>
           )}
