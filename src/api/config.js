@@ -32,6 +32,7 @@ export const API_ENDPOINTS = {
         UPDATE: '/api/gastos/:id',
         DELETE: '/api/gastos/:id',
         DETAIL: '/api/gastos/:id',
+        REPORT: '/api/reportes/gastos',
     },
     EXPENSE_CATEGORIES: {
         LIST: '/api/categorias-gastos',

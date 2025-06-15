@@ -24,6 +24,17 @@ const expensesService = {
         }
     },
 
+    async getResumenGeneral(params = {}) {
+        try {
+            const query = buildQuery(params);
+            const response = await axiosInstance.get(`${API_ENDPOINTS.EXPENSES.REPORT}?${query}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error en getResumenGeneral:', error);
+            throw error;
+        }
+    },
+
     async getExpense(id) {
         try {
             const response = await axiosInstance.get(`${API_ENDPOINTS.EXPENSES.DETAIL.replace(':id', id)}`);
@@ -159,4 +170,4 @@ const expensesService = {
     }
 };
 
-export default expensesService; 
+export default expensesService;
