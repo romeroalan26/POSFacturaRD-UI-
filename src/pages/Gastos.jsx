@@ -177,11 +177,10 @@ const Gastos = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900">Gastos</h1>
+        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
             <button
               onClick={() => {
                 setEditingExpense(null);
@@ -193,7 +192,7 @@ const Gastos = () => {
                 });
                 setShowModal(true);
               }}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -211,23 +210,54 @@ const Gastos = () => {
             </button>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex-1">
+          {/* Filtros */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fecha Inicio
+              </label>
+              <input
+                type="date"
+                name="fecha_inicio"
+                value={filtros.fecha_inicio}
+                onChange={handleFiltroChange}
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fecha Fin
+              </label>
+              <input
+                type="date"
+                name="fecha_fin"
+                value={filtros.fecha_fin}
+                onChange={handleFiltroChange}
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Descripción
+              </label>
               <input
                 type="text"
-                placeholder="Buscar gastos..."
                 name="descripcion"
                 value={filtros.descripcion}
                 onChange={handleFiltroChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Buscar por descripción"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
-            <div className="w-full sm:w-64">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Categoría
+              </label>
               <select
                 name="categoria_id"
                 value={filtros.categoria_id}
                 onChange={handleFiltroChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
                 <option value="">Todas las categorías</option>
                 {categories.map((category) => (
@@ -239,133 +269,98 @@ const Gastos = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Fecha inicio
-              </label>
-              <input
-                type="date"
-                name="fecha_inicio"
-                value={filtros.fecha_inicio}
-                onChange={handleFiltroChange}
-                max={
-                  new Date(new Date().setDate(new Date().getDate() - 1))
-                    .toISOString()
-                    .split("T")[0]
-                }
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Fecha fin
-              </label>
-              <input
-                type="date"
-                name="fecha_fin"
-                value={filtros.fecha_fin}
-                onChange={handleFiltroChange}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-              />
-            </div>
-            <div className="flex items-end">
-              <button
-                onClick={handleBuscar}
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors text-sm"
-              >
-                Buscar
-              </button>
-            </div>
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={handleBuscar}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              Buscar
+            </button>
           </div>
 
-          {error && (
-            <div className="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-              <strong className="font-bold">Error: </strong>
-              <span className="block sm:inline">{error}</span>
-            </div>
-          )}
-
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Descripción
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Categoría
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Monto
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Usuario
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {expenses.map((expense) => (
-                    <tr key={expense.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(expense.fecha).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {expense.descripcion}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {expense.categoria_nombre}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatCurrency(expense.monto)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {expense.usuario_nombre ||
-                          expense.usuario?.nombre ||
-                          "No especificado"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => handleEdit(expense)}
-                          className="text-blue-600 hover:text-blue-900 mr-4"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleDelete(expense.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Eliminar
-                        </button>
-                      </td>
+          {/* Tabla */}
+          <div className="overflow-x-auto">
+            <div className="inline-block min-w-full align-middle">
+              <div className="overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5">
+                <table className="min-w-full divide-y divide-gray-300">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Fecha
+                      </th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Descripción
+                      </th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Categoría
+                      </th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Monto
+                      </th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Usuario
+                      </th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {expenses.map((expense) => (
+                      <tr key={expense.id} className="hover:bg-gray-50">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(expense.fecha).toLocaleDateString()}
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 text-sm text-gray-900">
+                          {expense.descripcion}
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {expense.categoria_nombre}
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatCurrency(expense.monto)}
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {expense.usuario_nombre ||
+                            expense.usuario?.nombre ||
+                            "No especificado"}
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <button
+                              onClick={() => handleEdit(expense)}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => handleDelete(expense.id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
           {/* Paginación */}
-          <div className="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
             <div className="flex flex-1 justify-between sm:hidden">
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onClick={() => setCurrentPage(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
                 Anterior
               </button>
               <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
+                onClick={() => setCurrentPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
@@ -388,11 +383,12 @@ const Gastos = () => {
                 </p>
               </div>
               <div>
-                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm">
+                <nav
+                  className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                  aria-label="Pagination"
+                >
                   <button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.max(prev - 1, 1))
-                    }
+                    onClick={() => setCurrentPage(currentPage - 1)}
                     disabled={currentPage === 1}
                     className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
                   >
@@ -410,46 +406,23 @@ const Gastos = () => {
                       />
                     </svg>
                   </button>
-                  {[...Array(totalPages)].map((_, index) => {
-                    const pageNumber = index + 1;
-                    if (
-                      pageNumber === 1 ||
-                      pageNumber === totalPages ||
-                      (pageNumber >= currentPage - 2 &&
-                        pageNumber <= currentPage + 2)
-                    ) {
-                      return (
-                        <button
-                          key={pageNumber}
-                          onClick={() => setCurrentPage(pageNumber)}
-                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                            currentPage === pageNumber
-                              ? "z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                              : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                          }`}
-                        >
-                          {pageNumber}
-                        </button>
-                      );
-                    } else if (
-                      pageNumber === currentPage - 3 ||
-                      pageNumber === currentPage + 3
-                    ) {
-                      return (
-                        <span
-                          key={pageNumber}
-                          className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0"
-                        >
-                          ...
-                        </span>
-                      );
-                    }
-                    return null;
-                  })}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                          currentPage === page
+                            ? "z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                            : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
                   <button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                    }
+                    onClick={() => setCurrentPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
                   >
@@ -477,7 +450,7 @@ const Gastos = () => {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 sm:w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 {editingExpense ? "Editar Gasto" : "Nuevo Gasto"}
@@ -542,17 +515,17 @@ const Gastos = () => {
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
-                <div className="flex justify-end space-x-3">
+                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300"
+                    className="w-full sm:w-auto bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                    className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                   >
                     {editingExpense ? "Actualizar" : "Crear"}
                   </button>
