@@ -416,7 +416,7 @@ const Products = () => {
       )}
 
       {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
           {products.map((product) => (
             <div
               key={product.id}
@@ -429,9 +429,9 @@ const Products = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="p-4">
+              <div className="p-3 sm:p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-medium text-gray-900 truncate">
+                  <h3 className="text-sm sm:text-base font-medium text-gray-900 truncate">
                     {product.nombre}
                   </h3>
                   <span
@@ -444,70 +444,30 @@ const Products = () => {
                     {product.is_active ? "Activo" : "Inactivo"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl font-bold text-indigo-600">
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
+                  <span className="text-lg sm:text-xl font-bold text-indigo-600">
                     ${Number(product.precio).toFixed(2)}
                   </span>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-xs sm:text-sm text-gray-500">
                     Stock: {product.stock}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">
+                <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
+                  <span>
                     Compra: ${Number(product.precio_compra).toFixed(2)}
                   </span>
-                  <span className="text-sm text-gray-500">
+                  <span>
                     Ganancia: ${Number(product.ganancia_unitaria).toFixed(2)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">
+                <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500 mt-1">
+                  <span>
                     Margen: {Number(product.margen_ganancia).toFixed(2)}%
                   </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">
+                  <span>
                     {categories.find((c) => c.id === product.categoria_id)
                       ?.nombre || "Sin categoría"}
                   </span>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handleEdit(product)}
-                      className="text-indigo-600 hover:text-indigo-900"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleDelete(product.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -515,150 +475,128 @@ const Products = () => {
         </div>
       ) : (
         <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Imagen
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Nombre
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Precio Venta
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Precio Compra
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ganancia
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Margen
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stock
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stock Mínimo
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Categoría
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {products.map((product) => (
-                  <tr key={product.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <ProductImage
-                        imageName={product.imagen}
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {product.nombre}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        ${Number(product.precio).toFixed(2)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        ${Number(product.precio_compra).toFixed(2)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        ${Number(product.ganancia_unitaria).toFixed(2)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {Number(product.margen_ganancia).toFixed(2)}%
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {product.stock}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {product.stock_minimo || "-"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {categories.find((c) => c.id === product.categoria_id)
-                          ?.nombre || "Sin categoría"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          product.is_active
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {product.is_active ? "Activo" : "Inactivo"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-3">
-                        <button
-                          onClick={() => handleEdit(product)}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                            />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <div className="inline-block min-w-full align-middle">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Imagen
+                    </th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Nombre
+                    </th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Precio Venta
+                    </th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Precio Compra
+                    </th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ganancia
+                    </th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Margen
+                    </th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Stock
+                    </th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Stock Mínimo
+                    </th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Categoría
+                    </th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Acciones
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {products.map((product) => (
+                    <tr key={product.id}>
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                        <ProductImage
+                          imageName={product.imagen}
+                          className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover"
+                        />
+                      </td>
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-medium text-gray-900">
+                          {product.nombre}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-gray-900">
+                          ${Number(product.precio).toFixed(2)}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-gray-900">
+                          ${Number(product.precio_compra).toFixed(2)}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-gray-900">
+                          ${Number(product.ganancia_unitaria).toFixed(2)}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-gray-900">
+                          {Number(product.margen_ganancia).toFixed(2)}%
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-gray-900">
+                          {product.stock}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-gray-900">
+                          {product.stock_minimo || "-"}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-gray-900">
+                          {categories.find((c) => c.id === product.categoria_id)
+                            ?.nombre || "Sin categoría"}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            product.is_active
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {product.is_active ? "Activo" : "Inactivo"}
+                        </span>
+                      </td>
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEdit(product)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
