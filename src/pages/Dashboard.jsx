@@ -603,52 +603,51 @@ const Dashboard = () => {
 
       {/* Productos Bajo Stock */}
       <Accordion title="Productos Bajo Stock">
-        <div className="overflow-x-auto -mx-3 md:mx-0">
-          <div className="inline-block min-w-full align-middle">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Producto
-                  </th>
-                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Categoría
-                  </th>
-                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stock Actual
-                  </th>
-                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stock Mínimo
-                  </th>
-                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Vendido este Mes
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {productosBajoStock.map((producto) => (
-                  <tr key={producto.id}>
-                    <td className="px-3 md:px-6 py-2 md:py-4 whitespace-nowrap text-sm text-gray-900">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {productosBajoStock.map((producto) => {
+            const estadoStock =
+              producto.stock <= producto.stock_minimo ? "crítico" : "bajo";
+
+            return (
+              <div
+                key={producto.id}
+                className="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200"
+              >
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base font-medium text-gray-900">
                       {producto.nombre}
-                    </td>
-                    <td className="px-3 md:px-6 py-2 md:py-4 whitespace-nowrap text-sm text-gray-500">
-                      {producto.categoria}
-                    </td>
-                    <td className="px-3 md:px-6 py-2 md:py-4 whitespace-nowrap text-sm text-gray-900">
-                      {producto.stock}
-                    </td>
-                    <td className="px-3 md:px-6 py-2 md:py-4 whitespace-nowrap text-sm text-gray-900">
-                      {producto.stock_minimo}
-                    </td>
-                    <td className="px-3 md:px-6 py-2 md:py-4 whitespace-nowrap text-sm text-gray-900">
-                      {producto.total_vendido_mes}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </h3>
+                    <div
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        estadoStock === "crítico"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {estadoStock.toUpperCase()}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">
+                      Stock Actual: {producto.stock}
+                    </span>
+                    <span className="text-gray-600">
+                      Mínimo: {producto.stock_minimo}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
+
+        {productosBajoStock.length === 0 && (
+          <div className="text-center py-8 bg-white rounded-lg shadow-sm">
+            <p className="text-gray-500">No hay productos con bajo stock</p>
+          </div>
+        )}
       </Accordion>
 
       {/* Gráfico de Ganancias por Producto */}
