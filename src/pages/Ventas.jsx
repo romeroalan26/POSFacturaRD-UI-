@@ -323,22 +323,24 @@ export default function Ventas() {
       )}
 
       {/* Header con resumen */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-            <div>
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">
+      <div className="bg-gradient-to-r from-white to-gray-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row justify-between items-start sm:items-center">
+            <div className="flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
                 Historial de Ventas
               </h1>
-              <p className="mt-1 text-xs sm:text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500">
                 Gestiona y visualiza todas tus ventas
               </p>
             </div>
-            <div className="flex gap-2">
+
+            {/* Botones de exportación */}
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <button
                 onClick={handleExportarCSV}
                 disabled={exportLoading.csv}
-                className="w-full sm:w-auto bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
+                className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2.5 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 shadow-sm hover:shadow-md"
               >
                 {exportLoading.csv ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -361,7 +363,7 @@ export default function Ventas() {
               <button
                 onClick={handleExportarPDF}
                 disabled={exportLoading.pdf}
-                className="w-full sm:w-auto bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
+                className="w-full sm:w-auto bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2.5 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 shadow-sm hover:shadow-md"
               >
                 {exportLoading.pdf ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -382,39 +384,112 @@ export default function Ventas() {
                 <span>Exportar PDF</span>
               </button>
             </div>
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-4 w-full sm:w-auto">
-              <div className="bg-blue-50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg">
-                <p className="text-xs sm:text-sm text-blue-600 font-medium">
+          </div>
+
+          {/* KPIs */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-blue-600">
                   Total Ventas
-                </p>
-                <p className="text-base sm:text-2xl font-bold text-blue-700">
-                  {resumenGeneral.total_ventas}
-                </p>
+                </h3>
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <svg
+                    className="w-5 h-5 text-blue-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                </div>
               </div>
-              <div className="bg-green-50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg">
-                <p className="text-xs sm:text-sm text-green-600 font-medium">
+              <p className="text-2xl font-bold text-blue-700">
+                {resumenGeneral.total_ventas}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-green-600">
                   Ingresos Totales
-                </p>
-                <p className="text-base sm:text-2xl font-bold text-green-700">
-                  {formatCurrency(resumenGeneral.total_ingresos)}
-                </p>
+                </h3>
+                <div className="p-2 bg-green-50 rounded-lg">
+                  <svg
+                    className="w-5 h-5 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
               </div>
-              <div className="bg-indigo-50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg">
-                <p className="text-xs sm:text-sm text-indigo-600 font-medium">
+              <p className="text-2xl font-bold text-green-700">
+                {formatCurrency(resumenGeneral.total_ingresos)}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-indigo-600">
                   Ganancias Totales
-                </p>
-                <p className="text-base sm:text-2xl font-bold text-indigo-700">
-                  {formatCurrency(resumenGeneral.ganancia_total)}
-                </p>
+                </h3>
+                <div className="p-2 bg-indigo-50 rounded-lg">
+                  <svg
+                    className="w-5 h-5 text-indigo-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    />
+                  </svg>
+                </div>
               </div>
-              <div className="bg-purple-50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg">
-                <p className="text-xs sm:text-sm text-purple-600 font-medium">
+              <p className="text-2xl font-bold text-indigo-700">
+                {formatCurrency(resumenGeneral.ganancia_total)}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-purple-600">
                   Promedio de Venta
-                </p>
-                <p className="text-base sm:text-2xl font-bold text-purple-700">
-                  {formatCurrency(resumenGeneral.promedio_venta)}
-                </p>
+                </h3>
+                <div className="p-2 bg-purple-50 rounded-lg">
+                  <svg
+                    className="w-5 h-5 text-purple-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                </div>
               </div>
+              <p className="text-2xl font-bold text-purple-700">
+                {formatCurrency(resumenGeneral.promedio_venta)}
+              </p>
             </div>
           </div>
         </div>

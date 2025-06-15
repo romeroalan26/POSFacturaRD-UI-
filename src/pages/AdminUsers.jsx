@@ -15,6 +15,8 @@ const AdminUsers = () => {
   const [showRoleConfirmModal, setShowRoleConfirmModal] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
   const [roleChangeData, setRoleChangeData] = useState({
     userId: null,
     newRoleId: null,
@@ -33,10 +35,10 @@ const AdminUsers = () => {
   });
 
   const roles = [
-    { id: 1, nombre: "admin" },
-    { id: 2, nombre: "cajero" },
-    { id: 3, nombre: "inventario" },
-    { id: 4, nombre: "invitado" },
+    { id: 1, nombre: "admin", color: "purple" },
+    { id: 2, nombre: "cajero", color: "blue" },
+    { id: 3, nombre: "inventario", color: "green" },
+    { id: 4, nombre: "invitado", color: "gray" },
   ];
 
   useEffect(() => {
@@ -174,6 +176,15 @@ const AdminUsers = () => {
     }
   };
 
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole =
+      roleFilter === "all" || user.role_id === parseInt(roleFilter);
+    return matchesSearch && matchesRole;
+  });
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -183,11 +194,20 @@ const AdminUsers = () => {
   }
 
   return (
-    <div className="container mx-auto p-2 sm:p-4">
-      <div className="flex justify-end items-center mb-4 sm:mb-6">
+    <div className="container mx-auto p-4 space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white rounded-xl p-6 shadow-sm">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Administración de Usuarios
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Gestiona los usuarios y sus permisos del sistema
+          </p>
+        </div>
         <button
           onClick={() => setShowNewUserForm(true)}
-          className="w-full sm:w-auto bg-indigo-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-indigo-700 text-sm sm:text-base flex items-center gap-2"
+          className="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center justify-center gap-2 shadow-sm"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -205,71 +225,120 @@ const AdminUsers = () => {
         </button>
       </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded mb-4 text-sm sm:text-base">
-          {error}
+      {/* Filters Section */}
+      <div className="bg-white rounded-xl p-6 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar usuarios..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+            <svg
+              className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="all">Todos los roles</option>
+            {roles.map((role) => (
+              <option key={role.id} value={role.id}>
+                {role.nombre.charAt(0).toUpperCase() + role.nombre.slice(1)}
+              </option>
+            ))}
+          </select>
         </div>
-      )}
+      </div>
 
-      {successMessage && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-3 sm:px-4 py-2 sm:py-3 rounded mb-4 text-sm sm:text-base">
-          {successMessage}
-        </div>
-      )}
-
-      {/* Tabla de Usuarios */}
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+      {/* Users Table */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nombre
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Usuario
                 </th>
-                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Rol
                 </th>
-                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Acciones
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-gray-900">
-                        {user.nombre}
-                      </span>
-                      <span className="text-gray-500 sm:hidden">
-                        {user.email}
-                      </span>
+              {filteredUsers.map((user) => (
+                <tr
+                  key={user.id}
+                  className="hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                          <span className="text-indigo-600 font-medium">
+                            {user.nombre.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {user.nombre}
+                        </div>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm hidden sm:table-cell">
-                    {user.email}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{user.email}</div>
                   </td>
-                  <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <select
                       value={user.role_id}
                       onChange={(e) =>
                         handleRoleChange(user.id, parseInt(e.target.value))
                       }
-                      className="mt-1 block w-full pl-2 sm:pl-3 pr-8 sm:pr-10 py-1 sm:py-2 text-sm border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
+                      className={`text-sm rounded-full px-3 py-1 font-medium ${
+                        roles.find((r) => r.id === user.role_id)?.color ===
+                        "purple"
+                          ? "bg-purple-100 text-purple-800"
+                          : roles.find((r) => r.id === user.role_id)?.color ===
+                            "blue"
+                          ? "bg-blue-100 text-blue-800"
+                          : roles.find((r) => r.id === user.role_id)?.color ===
+                            "green"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      } border-0 focus:ring-2 focus:ring-indigo-500`}
                     >
                       {roles.map((role) => (
                         <option key={role.id} value={role.id}>
-                          {role.nombre}
+                          {role.nombre.charAt(0).toUpperCase() +
+                            role.nombre.slice(1)}
                         </option>
                       ))}
                     </select>
                   </td>
-                  <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm">
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="flex items-center space-x-3">
                       <button
                         onClick={() => handleViewPermissions(user.id)}
                         className="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50 transition-colors duration-200"
