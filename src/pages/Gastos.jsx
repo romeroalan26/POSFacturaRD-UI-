@@ -26,6 +26,10 @@ const Gastos = () => {
     descripcion: "",
     categoria_id: "",
   });
+  const [exportLoading, setExportLoading] = useState({
+    csv: false,
+    pdf: false,
+  });
 
   useEffect(() => {
     fetchExpenses();
@@ -168,6 +172,48 @@ const Gastos = () => {
     fetchExpenses(); // Buscamos con los filtros actuales
   };
 
+  const handleExport = async (type) => {
+    try {
+      setExportLoading((prev) => ({ ...prev, [type]: true }));
+      const params = {
+        ...filtros,
+      };
+      Object.keys(params).forEach(
+        (k) => (params[k] === "" || params[k] === null) && delete params[k]
+      );
+
+      let response;
+      if (type === "csv") {
+        response = await expensesService.exportToCSV(params);
+      } else {
+        response = await expensesService.exportToPDF(params);
+      }
+
+      // Crear un blob con la respuesta
+      const blob = new Blob([response], {
+        type: type === "csv" ? "text/csv" : "application/pdf",
+      });
+
+      // Crear un enlace temporal y hacer clic en él para descargar
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `gastos_${new Date().toISOString().split("T")[0]}.${type}`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(`Error al exportar a ${type}:`, err);
+      setError(`Error al exportar a ${type.toUpperCase()}`);
+    } finally {
+      setExportLoading((prev) => ({ ...prev, [type]: false }));
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -181,33 +227,81 @@ const Gastos = () => {
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm p-3 sm:p-6">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-            <button
-              onClick={() => {
-                setEditingExpense(null);
-                setFormData({
-                  monto: "",
-                  descripcion: "",
-                  categoria_id: "",
-                  fecha: new Date().toISOString().split("T")[0],
-                });
-                setShowModal(true);
-              }}
-              className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  setEditingExpense(null);
+                  setFormData({
+                    monto: "",
+                    descripcion: "",
+                    categoria_id: "",
+                    fecha: new Date().toISOString().split("T")[0],
+                  });
+                  setShowModal(true);
+                }}
+                className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
               >
-                <path
-                  fillRule="evenodd"
-                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>Nuevo Gasto</span>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span>Nuevo Gasto</span>
+              </button>
+              <button
+                onClick={() => handleExport("csv")}
+                disabled={exportLoading.csv}
+                className="w-full sm:w-auto bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
+              >
+                {exportLoading.csv ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+                <span>Exportar CSV</span>
+              </button>
+              <button
+                onClick={() => handleExport("pdf")}
+                disabled={exportLoading.pdf}
+                className="w-full sm:w-auto bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
+              >
+                {exportLoading.pdf ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+                <span>Exportar PDF</span>
+              </button>
+            </div>
           </div>
 
           {/* Filtros */}

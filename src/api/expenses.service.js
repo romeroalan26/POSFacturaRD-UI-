@@ -129,6 +129,33 @@ const expensesService = {
             console.error('Error en deleteExpenseCategory:', error);
             throw error;
         }
+    },
+
+    // Exportación
+    async exportToCSV(params = {}) {
+        try {
+            const query = buildQuery(params);
+            const response = await axiosInstance.get(`/api/gastos/exportar/csv?${query}`, {
+                responseType: 'blob'
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error en exportToCSV:', error);
+            throw error;
+        }
+    },
+
+    async exportToPDF(params = {}) {
+        try {
+            const query = buildQuery(params);
+            const response = await axiosInstance.get(`/api/gastos/exportar/pdf?${query}`, {
+                responseType: 'blob'
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error en exportToPDF:', error);
+            throw error;
+        }
     }
 };
 
