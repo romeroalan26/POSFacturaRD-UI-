@@ -113,6 +113,49 @@ const Gastos = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "monto") {
+      // Solo permitir números y un punto decimal
+      const regex = /^\d*\.?\d{0,2}$/;
+      if (!regex.test(value) && value !== "") {
+        return; // No actualizar el valor si no cumple con el formato
+      }
+
+      // Validar que el monto no exceda 99,999,999.99
+      const monto = parseFloat(value);
+      if (monto > 99999999.99) {
+        setError("El monto no puede ser mayor a 99,999,999.99");
+        return;
+      }
+
+      // Validar que sea un número válido
+      if (isNaN(monto) || monto < 0) {
+        setError("El monto debe ser un número válido mayor o igual a 0");
+        return;
+      }
+    }
+
+    if (name === "descripcion") {
+      // Validar longitud de la descripción
+      if (value.length > 255) {
+        setError("La descripción no puede tener más de 255 caracteres");
+        return;
+      }
+    }
+
+    if (name === "fecha") {
+      // Validar que la fecha no sea futura
+      const selectedDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        setError("La fecha no puede ser futura");
+        return;
+      }
+    }
+
+    setError(null); // Limpiar error si todas las validaciones pasan
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -122,6 +165,28 @@ const Gastos = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
+    // Validaciones adicionales antes de enviar
+    if (!formData.monto || formData.monto <= 0) {
+      setError("El monto es requerido y debe ser mayor a 0");
+      return;
+    }
+
+    if (!formData.descripcion || formData.descripcion.trim() === "") {
+      setError("La descripción es requerida");
+      return;
+    }
+
+    if (!formData.categoria_id) {
+      setError("La categoría es requerida");
+      return;
+    }
+
+    if (!formData.fecha) {
+      setError("La fecha es requerida");
+      return;
+    }
+
     try {
       setLoading(true);
       if (editingExpense) {
@@ -137,7 +202,7 @@ const Gastos = () => {
         categoria_id: "",
         fecha: new Date().toISOString().split("T")[0],
       });
-      await fetchExpenses();
+      await Promise.all([fetchExpenses(), fetchResumenGeneral()]);
     } catch (err) {
       console.error("Error al guardar gasto:", err);
       if (err.response?.data?.errores) {
@@ -167,7 +232,7 @@ const Gastos = () => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este gasto?")) {
       try {
         await expensesService.deleteExpense(id);
-        fetchExpenses();
+        await Promise.all([fetchExpenses(), fetchResumenGeneral()]);
       } catch (err) {
         if (err.response?.data?.errores) {
           setError(err.response.data.errores[0]);
@@ -789,15 +854,34 @@ const Gastos = () => {
                     Monto
                   </label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
+                    pattern="\d*\.?\d{0,2}"
                     name="monto"
                     value={formData.monto}
                     onChange={handleInputChange}
+                    onKeyPress={(e) => {
+                      // Solo permitir números y punto decimal
+                      const charCode = e.which ? e.which : e.keyCode;
+                      if (charCode === 46) {
+                        // punto decimal
+                        if (e.target.value.includes(".")) {
+                          e.preventDefault();
+                        }
+                      } else if (charCode < 48 || charCode > 57) {
+                        // números
+                        e.preventDefault();
+                      }
+                    }}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     required
-                    step="0.01"
                     min="0"
+                    max="99999999.99"
+                    placeholder="Máximo: 99,999,999.99"
                   />
+                  {error && (
+                    <p className="mt-1 text-sm text-red-600">{error}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -810,6 +894,8 @@ const Gastos = () => {
                     rows="3"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     required
+                    maxLength="255"
+                    placeholder="Máximo 255 caracteres"
                   />
                 </div>
                 <div>
@@ -841,6 +927,8 @@ const Gastos = () => {
                     value={formData.fecha}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required
+                    max={new Date().toISOString().split("T")[0]}
                   />
                 </div>
                 <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
