@@ -119,10 +119,31 @@ const salesService = {
      * @param {string} [params.metodo_pago] - Método de pago
      * @returns {Promise<Blob>} Archivo CSV
      */
-    async exportSales(params = {}) {
+    async exportSalesToCSV(params = {}) {
         try {
             const query = buildQuery(params);
-            const url = `${API_ENDPOINTS.SALES.EXPORT}${query ? `?${query}` : ''}`;
+            const url = `${API_ENDPOINTS.SALES.EXPORT_CSV}${query ? `?${query}` : ''}`;
+            const response = await axiosInstance.get(url, {
+                responseType: 'blob'
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    /**
+     * Exporta las ventas a PDF
+     * @param {Object} params - Parámetros de búsqueda
+     * @param {string} [params.fecha_inicio] - Fecha de inicio (YYYY-MM-DD)
+     * @param {string} [params.fecha_fin] - Fecha de fin (YYYY-MM-DD)
+     * @param {string} [params.metodo_pago] - Método de pago
+     * @returns {Promise<Blob>} Archivo PDF
+     */
+    async exportSalesToPDF(params = {}) {
+        try {
+            const query = buildQuery(params);
+            const url = `${API_ENDPOINTS.SALES.EXPORT_PDF}${query ? `?${query}` : ''}`;
             const response = await axiosInstance.get(url, {
                 responseType: 'blob'
             });
