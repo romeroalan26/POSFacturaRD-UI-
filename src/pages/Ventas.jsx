@@ -90,7 +90,21 @@ export default function Ventas() {
   };
 
   const handleFiltroChange = (e) => {
-    setFiltros({ ...filtros, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    // Validar que la fecha de inicio no sea mayor o igual al día actual
+    if (name === "fecha_inicio") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Establecer a inicio del día
+      const selectedDate = new Date(value);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate >= today) {
+        return; // No permitir fechas actuales o futuras
+      }
+    }
+
+    setFiltros({ ...filtros, [name]: value });
   };
 
   const handleBuscar = () => {
@@ -215,6 +229,11 @@ export default function Ventas() {
                 name="fecha_inicio"
                 value={filtros.fecha_inicio}
                 onChange={handleFiltroChange}
+                max={
+                  new Date(new Date().setDate(new Date().getDate() - 1))
+                    .toISOString()
+                    .split("T")[0]
+                }
                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
               />
             </div>

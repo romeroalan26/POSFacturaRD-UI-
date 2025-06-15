@@ -20,21 +20,30 @@ const Gastos = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const itemsPerPage = 10;
+  const [filtros, setFiltros] = useState({
+    fecha_inicio: "",
+    fecha_fin: "",
+    descripcion: "",
+    categoria_id: "",
+  });
 
   useEffect(() => {
     fetchExpenses();
     fetchCategories();
-  }, [currentPage, searchTerm, selectedCategory]);
+  }, [currentPage]);
 
   const fetchExpenses = async () => {
     try {
       setLoading(true);
-      const response = await expensesService.getExpenses({
+      const params = {
         page: currentPage,
         size: itemsPerPage,
-        buscar: searchTerm,
-        categoria_id: selectedCategory,
-      });
+        ...filtros,
+      };
+      Object.keys(params).forEach(
+        (k) => (params[k] === "" || params[k] === null) && delete params[k]
+      );
+      const response = await expensesService.getExpenses(params);
 
       if (response && response.data) {
         setExpenses(response.data);
@@ -136,6 +145,29 @@ const Gastos = () => {
     }).format(amount);
   };
 
+  const handleFiltroChange = (e) => {
+    const { name, value } = e.target;
+
+    // Validar que la fecha de inicio no sea mayor o igual al día actual
+    if (name === "fecha_inicio") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Establecer a inicio del día
+      const selectedDate = new Date(value);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate >= today) {
+        return; // No permitir fechas actuales o futuras
+      }
+    }
+
+    setFiltros((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleBuscar = () => {
+    setCurrentPage(1); // Reiniciamos a la primera página
+    fetchExpenses(); // Buscamos con los filtros actuales
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -184,15 +216,17 @@ const Gastos = () => {
               <input
                 type="text"
                 placeholder="Buscar gastos..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                name="descripcion"
+                value={filtros.descripcion}
+                onChange={handleFiltroChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div className="w-full sm:w-64">
               <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                name="categoria_id"
+                value={filtros.categoria_id}
+                onChange={handleFiltroChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Todas las categorías</option>
@@ -202,6 +236,46 @@ const Gastos = () => {
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fecha inicio
+              </label>
+              <input
+                type="date"
+                name="fecha_inicio"
+                value={filtros.fecha_inicio}
+                onChange={handleFiltroChange}
+                max={
+                  new Date(new Date().setDate(new Date().getDate() - 1))
+                    .toISOString()
+                    .split("T")[0]
+                }
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fecha fin
+              </label>
+              <input
+                type="date"
+                name="fecha_fin"
+                value={filtros.fecha_fin}
+                onChange={handleFiltroChange}
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+              />
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={handleBuscar}
+                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors text-sm"
+              >
+                Buscar
+              </button>
             </div>
           </div>
 
@@ -253,7 +327,9 @@ const Gastos = () => {
                         {formatCurrency(expense.monto)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {expense.usuario_email}
+                        {expense.usuario_nombre ||
+                          expense.usuario?.nombre ||
+                          "No especificado"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
