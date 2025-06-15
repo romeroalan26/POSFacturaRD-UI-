@@ -15,7 +15,9 @@ const Products = () => {
   const [formData, setFormData] = useState({
     nombre: "",
     precio: "",
+    precio_compra: "",
     stock: "",
+    stock_minimo: "",
     con_itbis: true,
     categoria_id: "",
     imagen: "",
@@ -29,8 +31,10 @@ const Products = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [viewMode, setViewMode] = useState("list"); // Cambiado de 'grid' a 'list'
-  const itemsPerPage = 12;
+  const [viewMode, setViewMode] = useState("list");
+  const itemsPerPage = 10;
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -42,16 +46,42 @@ const Products = () => {
       setLoading(true);
       const data = await productsService.getProducts({
         page: currentPage,
-        per_page: itemsPerPage,
+        size: itemsPerPage,
         buscar: searchTerm || undefined,
         categoria_id: selectedCategory || undefined,
       });
-      setProducts(Array.isArray(data.data) ? data.data : []);
-      setTotalPages(data.totalPages || 1);
-      setTotalItems(data.totalElements || 0);
+
+      if (!Array.isArray(data.data)) {
+        console.error(
+          "La respuesta de la API no contiene un array de productos:",
+          data
+        );
+        setProducts([]);
+        setTotalPages(1);
+        setTotalItems(0);
+        return;
+      }
+
+      setProducts(data.data);
+
+      if (data.totalElements === null || data.totalPages === null) {
+        if (data.data.length < itemsPerPage) {
+          setTotalPages(currentPage);
+          setTotalItems((currentPage - 1) * itemsPerPage + data.data.length);
+        } else {
+          setTotalPages(currentPage);
+          setTotalItems(currentPage * itemsPerPage);
+        }
+      } else {
+        setTotalPages(data.totalPages);
+        setTotalItems(data.totalElements);
+      }
     } catch (err) {
+      console.error("Error al cargar productos:", err);
       setError("Error al cargar los productos");
-      console.error(err);
+      setProducts([]);
+      setTotalPages(1);
+      setTotalItems(0);
     } finally {
       setLoading(false);
     }
@@ -59,10 +89,11 @@ const Products = () => {
 
   const fetchCategories = async () => {
     try {
-      const data = await categoriesService.getCategories();
+      const data = await categoriesService.getActiveCategories();
       setCategories(Array.isArray(data.data) ? data.data : []);
     } catch (err) {
       console.error("Error al cargar las categorías:", err);
+      setError("Error al cargar las categorías");
     }
   };
 
@@ -111,14 +142,24 @@ const Products = () => {
       let imagenNombre = formData.imagen;
 
       if (imageFile) {
-        const result = await productsService.uploadImage(imageFile);
-        imagenNombre = result.nombre_archivo;
+        try {
+          const result = await productsService.uploadImage(imageFile);
+          imagenNombre = result.nombre_archivo;
+        } catch (error) {
+          console.error("Error al subir la imagen:", error);
+          showErrorMessage(
+            "Error al subir la imagen. Por favor, intente nuevamente."
+          );
+          return;
+        }
       }
 
       const dataToSend = {
         ...formData,
         precio: parseFloat(formData.precio),
+        precio_compra: parseFloat(formData.precio_compra),
         stock: parseInt(formData.stock),
+        stock_minimo: parseInt(formData.stock_minimo),
         imagen: imagenNombre,
       };
 
@@ -132,7 +173,9 @@ const Products = () => {
       setFormData({
         nombre: "",
         precio: "",
+        precio_compra: "",
         stock: "",
+        stock_minimo: "",
         con_itbis: true,
         categoria_id: "",
         imagen: "",
@@ -141,14 +184,31 @@ const Products = () => {
       setSelectedImage(null);
       setPreviewImage(null);
       setImageFile(null);
-      fetchProducts();
+
+      setSuccessMessage(
+        editingProduct
+          ? "Producto actualizado exitosamente"
+          : "Producto creado exitosamente"
+      );
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        setSuccessMessage("");
+      }, 3000);
+
+      await fetchProducts();
     } catch (error) {
+      console.error("Error completo:", error);
       if (error.response?.data?.errores) {
         showErrorMessage(error.response.data.errores[0]);
       } else if (error.response?.data?.mensaje) {
         showErrorMessage(error.response.data.mensaje);
+      } else if (error.message) {
+        showErrorMessage(error.message);
       } else {
-        showErrorMessage("Error al guardar el producto");
+        showErrorMessage(
+          "Error al guardar el producto. Por favor, intente nuevamente."
+        );
       }
     } finally {
       setLoading(false);
@@ -160,7 +220,9 @@ const Products = () => {
     setFormData({
       nombre: product.nombre,
       precio: product.precio,
+      precio_compra: product.precio_compra,
       stock: product.stock,
+      stock_minimo: product.stock_minimo || "",
       con_itbis: product.con_itbis,
       categoria_id: product.categoria_id,
       imagen: product.imagen || "",
@@ -209,11 +271,9 @@ const Products = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header con filtros y acciones */}
       <div className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="flex-1 w-full sm:w-auto flex flex-col sm:flex-row gap-4">
-            {/* Búsqueda */}
             <div className="relative flex-1">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg
@@ -239,7 +299,6 @@ const Products = () => {
               />
             </div>
 
-            {/* Filtro de categorías */}
             <div className="w-full sm:w-64">
               <select
                 value={selectedCategory}
@@ -257,7 +316,6 @@ const Products = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Botones de vista */}
             <div className="flex items-center bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => setViewMode("grid")}
@@ -305,14 +363,15 @@ const Products = () => {
               </button>
             </div>
 
-            {/* Botón Agregar */}
             <button
               onClick={() => {
                 setEditingProduct(null);
                 setFormData({
                   nombre: "",
                   precio: "",
+                  precio_compra: "",
                   stock: "",
+                  stock_minimo: "",
                   con_itbis: true,
                   categoria_id: "",
                   imagen: "",
@@ -350,7 +409,12 @@ const Products = () => {
         </div>
       )}
 
-      {/* Vista de productos */}
+      {showSuccess && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+          {successMessage}
+        </div>
+      )}
+
       {viewMode === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((product) => (
@@ -386,6 +450,19 @@ const Products = () => {
                   </span>
                   <span className="text-sm text-gray-500">
                     Stock: {product.stock}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">
+                    Compra: ${Number(product.precio_compra).toFixed(2)}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    Ganancia: ${Number(product.ganancia_unitaria).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">
+                    Margen: {Number(product.margen_ganancia).toFixed(2)}%
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -449,10 +526,22 @@ const Products = () => {
                     Nombre
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Precio
+                    Precio Venta
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Precio Compra
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ganancia
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Margen
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Stock
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Stock Mínimo
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Categoría
@@ -486,7 +575,27 @@ const Products = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
+                        ${Number(product.precio_compra).toFixed(2)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        ${Number(product.ganancia_unitaria).toFixed(2)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {Number(product.margen_ganancia).toFixed(2)}%
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
                         {product.stock}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {product.stock_minimo || "-"}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -554,7 +663,6 @@ const Products = () => {
         </div>
       )}
 
-      {/* Paginación */}
       <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
         <div className="flex flex-1 justify-between sm:hidden">
           <button
@@ -676,7 +784,6 @@ const Products = () => {
         </div>
       </div>
 
-      {/* Modal de edición/creación */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
@@ -740,12 +847,26 @@ const Products = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Precio
+                    Precio de Venta
                   </label>
                   <input
                     type="number"
                     name="precio"
                     value={formData.precio}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    required
+                    step="0.01"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Precio de Compra
+                  </label>
+                  <input
+                    type="number"
+                    name="precio_compra"
+                    value={formData.precio_compra}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     required
@@ -760,6 +881,19 @@ const Products = () => {
                     type="number"
                     name="stock"
                     value={formData.stock}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Stock Mínimo
+                  </label>
+                  <input
+                    type="number"
+                    name="stock_minimo"
+                    value={formData.stock_minimo}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     required
@@ -816,7 +950,9 @@ const Products = () => {
                       setFormData({
                         nombre: "",
                         precio: "",
+                        precio_compra: "",
                         stock: "",
+                        stock_minimo: "",
                         con_itbis: true,
                         categoria_id: "",
                         imagen: "",

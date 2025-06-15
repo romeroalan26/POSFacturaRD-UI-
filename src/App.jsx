@@ -13,6 +13,7 @@ import PuntoVenta from "./pages/PuntoVenta";
 import Categorias from "./pages/Categorias";
 import Ventas from "./pages/Ventas";
 import AdminUsers from "./pages/AdminUsers";
+import Gastos from "./pages/Gastos";
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -27,6 +28,69 @@ const PrivateRoute = ({ children }) => {
 
   if (!user) {
     return <Navigate to="/login" />;
+  }
+
+  return <MainLayout>{children}</MainLayout>;
+};
+
+const AdminRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (
+    !user ||
+    user.user?.role === "cajero" ||
+    user.user?.role === "inventario" ||
+    user.user?.role === "invitado"
+  ) {
+    return <Navigate to="/dashboard" />;
+  }
+
+  return <MainLayout>{children}</MainLayout>;
+};
+
+const SalesRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (
+    !user ||
+    user.user?.role === "inventario" ||
+    user.user?.role === "invitado"
+  ) {
+    return <Navigate to="/dashboard" />;
+  }
+
+  return <MainLayout>{children}</MainLayout>;
+};
+
+const GuestRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!user || user.user?.role !== "invitado") {
+    return <Navigate to="/dashboard" />;
   }
 
   return <MainLayout>{children}</MainLayout>;
@@ -64,9 +128,9 @@ function App() {
         <Route
           path="/pos"
           element={
-            <PrivateRoute>
+            <SalesRoute>
               <PuntoVenta />
-            </PrivateRoute>
+            </SalesRoute>
           }
         />
         <Route
@@ -80,17 +144,25 @@ function App() {
         <Route
           path="/sales"
           element={
-            <PrivateRoute>
+            <SalesRoute>
               <Ventas />
-            </PrivateRoute>
+            </SalesRoute>
           }
         />
         <Route
           path="/admin/users"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <AdminUsers />
-            </PrivateRoute>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/gastos"
+          element={
+            <AdminRoute>
+              <Gastos />
+            </AdminRoute>
           }
         />
       </Routes>

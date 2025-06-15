@@ -41,9 +41,11 @@ const Login = () => {
 
       <div className="relative w-full max-w-md px-6 py-12 bg-black/40 backdrop-blur-lg rounded-2xl shadow-2xl border border-purple-500/20">
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-2">
-            CORO 69
-          </h1>
+          <img
+            src="/src/assets/images/icon.png"
+            alt="CORO 69 Logo"
+            className="w-32 h-32 mx-auto mb-4 rounded-full object-cover"
+          />
           <p className="text-purple-200 text-lg">Sistema de Gestión</p>
         </div>
 

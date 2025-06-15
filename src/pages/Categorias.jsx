@@ -3,6 +3,7 @@ import categoriesService from "../api/categories.service";
 
 const Categorias = () => {
   const [categories, setCategories] = useState([]);
+  const [expenseCategories, setExpenseCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -10,7 +11,9 @@ const Categorias = () => {
   const [formData, setFormData] = useState({
     nombre: "",
     descripcion: "",
+    is_active: true,
   });
+  const [activeTab, setActiveTab] = useState("productos");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -18,36 +21,37 @@ const Categorias = () => {
 
   useEffect(() => {
     fetchCategories();
-  }, [currentPage]);
+    fetchExpenseCategories();
+  }, []);
 
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await categoriesService.getCategories({
-        page: currentPage,
-        size: itemsPerPage,
-      });
-
-      if (response && response.data) {
-        setCategories(Array.isArray(response.data) ? response.data : []);
-        setTotalPages(response.totalPages || 1);
-        setTotalItems(response.totalElements || 0);
-      } else {
-        setCategories([]);
-      }
+      const data = await categoriesService.getCategories();
+      setCategories(Array.isArray(data.data) ? data.data : []);
     } catch (err) {
+      console.error("Error al cargar las categorías:", err);
       setError("Error al cargar las categorías");
-      console.error("Error al cargar categorías:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchExpenseCategories = async () => {
+    try {
+      const data = await categoriesService.getExpenseCategories();
+      setExpenseCategories(Array.isArray(data.data) ? data.data : []);
+    } catch (err) {
+      console.error("Error al cargar las categorías de gastos:", err);
+      setError("Error al cargar las categorías de gastos");
+    }
+  };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -57,15 +61,24 @@ const Categorias = () => {
     try {
       setLoading(true);
       if (editingCategory) {
-        const response = await categoriesService.updateCategory(
-          editingCategory.id,
-          formData
-        );
+        const response =
+          activeTab === "productos"
+            ? await categoriesService.updateCategory(
+                editingCategory.id,
+                formData
+              )
+            : await categoriesService.updateExpenseCategory(
+                editingCategory.id,
+                formData
+              );
         if (response && response.mensaje) {
           console.log("Categoría actualizada:", response.mensaje);
         }
       } else {
-        const response = await categoriesService.createCategory(formData);
+        const response =
+          activeTab === "productos"
+            ? await categoriesService.createCategory(formData)
+            : await categoriesService.createExpenseCategory(formData);
         if (response && response.mensaje) {
           console.log("Categoría creada:", response.mensaje);
         }
@@ -75,8 +88,13 @@ const Categorias = () => {
       setFormData({
         nombre: "",
         descripcion: "",
+        is_active: true,
       });
-      await fetchCategories();
+      if (activeTab === "productos") {
+        await fetchCategories();
+      } else {
+        await fetchExpenseCategories();
+      }
     } catch (err) {
       console.error("Error al guardar categoría:", err);
       if (err.response?.data?.errores) {
@@ -98,6 +116,7 @@ const Categorias = () => {
     setFormData({
       nombre: category.nombre,
       descripcion: category.descripcion || "",
+      is_active: category.is_active !== undefined ? category.is_active : true,
     });
     setShowModal(true);
   };
@@ -107,15 +126,26 @@ const Categorias = () => {
       window.confirm("¿Estás seguro de que deseas eliminar esta categoría?")
     ) {
       try {
-        await categoriesService.deleteCategory(id);
-        fetchCategories();
+        if (activeTab === "productos") {
+          await categoriesService.deleteCategory(id);
+          await fetchCategories();
+        } else {
+          await categoriesService.deleteExpenseCategory(id);
+          await fetchExpenseCategories();
+        }
       } catch (err) {
-        if (err.response && err.response.data && err.response.data.errores) {
+        console.error("Error al eliminar categoría:", err);
+        if (err.response?.status === 403) {
+          setError("No tiene permisos para eliminar esta categoría");
+        } else if (err.response?.data?.mensaje) {
+          setError(err.response.data.mensaje);
+        } else if (err.response?.data?.errores) {
           setError(err.response.data.errores[0]);
+        } else if (err.response?.data?.error) {
+          setError(err.response.data.error);
         } else {
           setError("Error al eliminar la categoría");
         }
-        console.error(err);
       }
     }
   };
@@ -129,14 +159,16 @@ const Categorias = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-end items-center">
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Categorías</h1>
         <button
           onClick={() => {
             setEditingCategory(null);
             setFormData({
               nombre: "",
               descripcion: "",
+              is_active: true,
             });
             setShowModal(true);
           }}
@@ -146,181 +178,134 @@ const Categorias = () => {
         </button>
       </div>
 
+      {/* Tabs */}
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab("productos")}
+            className={`${
+              activeTab === "productos"
+                ? "border-indigo-500 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+          >
+            Productos
+          </button>
+          <button
+            onClick={() => setActiveTab("gastos")}
+            className={`${
+              activeTab === "gastos"
+                ? "border-indigo-500 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+          >
+            Gastos
+          </button>
+        </nav>
+      </div>
+
       {error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-          role="alert"
-        >
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          {error}
         </div>
       )}
 
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nombre
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Descripción
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {categories.map((category) => (
-                <tr key={category.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {category.nombre}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {category.descripcion || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => handleEdit(category)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(category.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Paginación */}
-      <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-        <div className="flex flex-1 justify-between sm:hidden">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            Anterior
-          </button>
-          <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages}
-            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            Siguiente
-          </button>
-        </div>
-        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-gray-700">
-              Mostrando{" "}
-              <span className="font-medium">
-                {(currentPage - 1) * itemsPerPage + 1}
-              </span>{" "}
-              a{" "}
-              <span className="font-medium">
-                {Math.min(currentPage * itemsPerPage, totalItems)}
-              </span>{" "}
-              de <span className="font-medium">{totalItems}</span> resultados
-            </p>
-          </div>
-          <div>
-            <nav
-              className="isolate inline-flex -space-x-px rounded-md shadow-sm"
-              aria-label="Pagination"
-            >
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-              >
-                <span className="sr-only">Anterior</span>
-                <svg
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-              {[...Array(totalPages)].map((_, index) => {
-                const pageNumber = index + 1;
-                // Mostrar solo 5 páginas alrededor de la página actual
-                if (
-                  pageNumber === 1 ||
-                  pageNumber === totalPages ||
-                  (pageNumber >= currentPage - 2 &&
-                    pageNumber <= currentPage + 2)
-                ) {
-                  return (
-                    <button
-                      key={pageNumber}
-                      onClick={() => setCurrentPage(pageNumber)}
-                      className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                        currentPage === pageNumber
-                          ? "z-10 bg-indigo-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                          : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                      }`}
-                    >
-                      {pageNumber}
-                    </button>
-                  );
-                } else if (
-                  pageNumber === currentPage - 3 ||
-                  pageNumber === currentPage + 3
-                ) {
-                  return (
-                    <span
-                      key={pageNumber}
-                      className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0"
-                    >
-                      ...
-                    </span>
-                  );
-                }
-                return null;
-              })}
-              <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-              >
-                <span className="sr-only">Siguiente</span>
-                <svg
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </nav>
-          </div>
-        </div>
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Nombre
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Descripción
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Estado
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {activeTab === "productos"
+              ? categories.map((category) => (
+                  <tr key={category.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {category.nombre}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {category.descripcion || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          category.is_active
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {category.is_active ? "Activo" : "Inactivo"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={() => handleEdit(category)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDelete(category.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              : expenseCategories.map((category) => (
+                  <tr key={category.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {category.nombre}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {category.descripcion || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          category.is_active
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {category.is_active ? "Activo" : "Inactivo"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={() => handleEdit(category)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDelete(category.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+          </tbody>
+        </table>
       </div>
 
       {showModal && (
@@ -355,6 +340,18 @@ const Categorias = () => {
                     rows="3"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={formData.is_active}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                  <label className="ml-2 block text-sm text-gray-900">
+                    Categoría Activa
+                  </label>
                 </div>
                 <div className="flex justify-end space-x-3">
                   <button

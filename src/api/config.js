@@ -24,6 +24,20 @@ export const API_ENDPOINTS = {
         UPDATE: '/api/categorias/:id',
         DELETE: '/api/categorias/:id',
     },
+    EXPENSES: {
+        LIST: '/api/gastos',
+        CREATE: '/api/gastos',
+        UPDATE: '/api/gastos/:id',
+        DELETE: '/api/gastos/:id',
+        DETAIL: '/api/gastos/:id',
+    },
+    EXPENSE_CATEGORIES: {
+        LIST: '/api/categorias-gastos',
+        CREATE: '/api/categorias-gastos',
+        UPDATE: '/api/categorias-gastos/:id',
+        DELETE: '/api/categorias-gastos/:id',
+        DETAIL: '/api/categorias-gastos/:id',
+    },
     REPORTS: {
         DAILY_SALES: '/api/reportes/ventas-diarias',
         TOP_PRODUCTS: '/api/reportes/productos-mas-vendidos',

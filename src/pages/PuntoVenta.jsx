@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import posService from "../api/pos.service";
 import { API_ENDPOINTS } from "../api/config";
+import shoppingCartIcon from "../assets/images/shopping-cart.png";
 
 const PuntoVenta = () => {
   const [products, setProducts] = useState([]);
@@ -51,6 +52,7 @@ const PuntoVenta = () => {
         buscar: debouncedSearchTerm || undefined,
         page: currentPage,
         size: productsPerPage,
+        is_active: true,
       };
       const response = await posService.getProducts(params);
       setProducts(response.data || []);
@@ -72,11 +74,21 @@ const PuntoVenta = () => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
       if (existingItem) {
+        if (existingItem.cantidad + 1 > product.stock) {
+          setError("No hay suficiente stock disponible");
+          setTimeout(() => setError(""), 3000);
+          return prevCart;
+        }
         return prevCart.map((item) =>
           item.id === product.id
             ? { ...item, cantidad: item.cantidad + 1 }
             : item
         );
+      }
+      if (product.stock < 1) {
+        setError("No hay stock disponible para este producto");
+        setTimeout(() => setError(""), 3000);
+        return prevCart;
       }
       return [...prevCart, { ...product, cantidad: 1 }];
     });
@@ -91,11 +103,21 @@ const PuntoVenta = () => {
       removeFromCart(productId);
       return;
     }
-    setCart((prevCart) =>
-      prevCart.map((item) =>
+
+    setCart((prevCart) => {
+      const product = products.find((p) => p.id === productId);
+      if (!product) return prevCart;
+
+      if (newQuantity > product.stock) {
+        setError("No hay suficiente stock disponible");
+        setTimeout(() => setError(""), 3000);
+        return prevCart;
+      }
+
+      return prevCart.map((item) =>
         item.id === productId ? { ...item, cantidad: newQuantity } : item
-      )
-    );
+      );
+    });
   };
 
   const calculateSubtotal = () => {
@@ -116,14 +138,48 @@ const PuntoVenta = () => {
 
   const handleCheckout = async () => {
     try {
+      const stockErrors = cart
+        .map((item) => {
+          const product = products.find((p) => p.id === item.id);
+          if (!product) return null;
+          if (item.cantidad > product.stock) {
+            return `No hay suficiente stock para ${product.nombre}. Stock disponible: ${product.stock}`;
+          }
+          return null;
+        })
+        .filter((error) => error !== null);
+
+      if (stockErrors.length > 0) {
+        setError(stockErrors.join("\n"));
+        setTimeout(() => setError(""), 5000);
+        return;
+      }
+
       setLoading(true);
       const saleData = {
         productos: cart.map((item) => ({
           producto_id: item.id,
           cantidad: item.cantidad,
-          precio_unitario: parseFloat(item.precio),
+          precio: parseFloat(item.precio),
+          precio_compra: parseFloat(item.precio_compra || 0),
+          ganancia: parseFloat(item.ganancia_unitaria || 0),
+          margen: parseFloat(item.margen_ganancia || 0),
         })),
         metodo_pago: paymentMethod,
+        subtotal: calculateSubtotal(),
+        itbis_total: calculateITBIS(),
+        total: calculateTotal(),
+        ganancia_total: cart.reduce(
+          (total, item) =>
+            total + parseFloat(item.ganancia_unitaria || 0) * item.cantidad,
+          0
+        ),
+        margen_promedio:
+          cart.reduce(
+            (total, item) =>
+              total + parseFloat(item.margen_ganancia || 0) * item.cantidad,
+            0
+          ) / cart.reduce((total, item) => total + item.cantidad, 0),
       };
 
       await posService.createSale(saleData);
@@ -140,7 +196,16 @@ const PuntoVenta = () => {
         setSuccessMessage("");
       }, 3000);
     } catch (error) {
-      setError(error.response?.data?.mensaje || "Error al procesar la venta");
+      console.error("Error al procesar la venta:", error);
+      if (error.response?.status === 403) {
+        setError("No tiene permisos para realizar ventas");
+      } else if (error.response?.data?.mensaje) {
+        setError(error.response.data.mensaje);
+      } else if (error.response?.data?.errores) {
+        setError(error.response.data.errores[0]);
+      } else {
+        setError("Error al procesar la venta");
+      }
       setTimeout(() => {
         setError("");
       }, 3000);
@@ -166,19 +231,11 @@ const PuntoVenta = () => {
           onClick={() => setShowCart(true)}
           className="bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-200 flex items-center space-x-2"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 8L5 21h14M7 13v8a2 2 0 002 2h6a2 2 0 002-2v-8m-8 0V9a2 2 0 012-2h4a2 2 0 012 2v4.01"
-            />
-          </svg>
+          <img
+            src={shoppingCartIcon}
+            alt="Carrito"
+            className="w-5 h-5 [filter:brightness(0)_saturate(100%)_invert(100%)_sepia(0%)_saturate(0%)_hue-rotate(93deg)_brightness(103%)_contrast(103%)]"
+          />
           <span className="font-semibold">{itemCount}</span>
           <span className="hidden sm:inline">
             {formatCurrency(calculateTotal())}
@@ -241,19 +298,11 @@ const PuntoVenta = () => {
               onClick={() => setShowCart(true)}
               className="sm:hidden bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium flex items-center justify-center space-x-2"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 8L5 21h14"
-                />
-              </svg>
+              <img
+                src={shoppingCartIcon}
+                alt="Carrito"
+                className="w-5 h-5 [filter:brightness(0)_saturate(100%)_invert(100%)_sepia(0%)_saturate(0%)_hue-rotate(93deg)_brightness(103%)_contrast(103%)]"
+              />
               <span>
                 Carrito (
                 {cart.reduce((total, item) => total + item.cantidad, 0)})
@@ -271,46 +320,58 @@ const PuntoVenta = () => {
           </div>
         ) : (
           <>
-            {/* Products Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
+            {/* Productos */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {products.map((product) => (
                 <div
                   key={product.id}
                   onClick={() => addToCart(product)}
-                  className="bg-white rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-md transition-all duration-200 border border-gray-100 hover:border-blue-200 group"
+                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 overflow-hidden group cursor-pointer hover:border-blue-200"
                 >
-                  {/* Product Image */}
-                  <div className="aspect-square bg-gray-50 rounded-lg mb-3 overflow-hidden group-hover:bg-gray-100 transition-colors">
-                    {product.imagen ? (
-                      <img
-                        src={`${API_ENDPOINTS.BASE_URL}/api/imagenes/productos/${product.imagen}`}
-                        alt={product.nombre}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src =
-                            "https://via.placeholder.com/200x200/f3f4f6/9ca3af?text=Sin+Imagen";
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl sm:text-3xl">
-                        📦
-                      </div>
-                    )}
+                  <div className="relative aspect-square bg-gray-50">
+                    <img
+                      src={
+                        product.imagen
+                          ? `${API_ENDPOINTS.BASE_URL}/api/imagenes/productos/${product.imagen}`
+                          : "https://via.placeholder.com/300"
+                      }
+                      alt={product.nombre}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src =
+                          "https://via.placeholder.com/300/f3f4f6/9ca3af?text=Sin+Imagen";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-5 transition-all duration-200" />
+                    <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-gray-700 shadow-sm">
+                      Stock: {product.stock}
+                    </div>
                   </div>
-
-                  {/* Product Info */}
-                  <div className="space-y-1">
-                    <h3 className="font-medium text-gray-900 text-xs sm:text-sm line-clamp-2 leading-tight">
+                  <div className="p-3 border-t border-gray-100">
+                    <h3 className="font-medium text-gray-900 text-sm line-clamp-2 mb-1.5">
                       {product.nombre}
                     </h3>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm sm:text-lg font-bold text-blue-600">
-                        ${parseFloat(product.precio).toFixed(2)}
+                      <span className="text-blue-600 font-semibold text-base">
+                        {formatCurrency(product.precio)}
                       </span>
-                      <span className="text-xs text-gray-500">
-                        {product.stock}
-                      </span>
+                      <div className="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-sm">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -391,30 +452,24 @@ const PuntoVenta = () => {
 
         {/* Sidebar */}
         <div
-          className={`absolute right-0 top-0 h-full w-full max-w-lg bg-white shadow-xl transform transition-transform duration-300 flex flex-col ${
+          className={`absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-xl transform transition-transform duration-300 flex flex-col ${
             showCart ? "translate-x-0" : "translate-x-full"
           }`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b bg-gray-50">
+          <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 8L5 21h14"
-                  />
-                </svg>
+              <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                <img
+                  src={shoppingCartIcon}
+                  alt="Carrito"
+                  className="w-5 h-5 [filter:brightness(0)_saturate(100%)_invert(37%)_sepia(98%)_saturate(1418%)_hue-rotate(202deg)_brightness(97%)_contrast(101%)]"
+                />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Mi Carrito</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Mi Carrito
+                </h2>
                 <p className="text-sm text-gray-500">
                   {cart.reduce((total, item) => total + item.cantidad, 0)}{" "}
                   productos
@@ -423,10 +478,10 @@ const PuntoVenta = () => {
             </div>
             <button
               onClick={() => setShowCart(false)}
-              className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <svg
-                className="w-6 h-6"
+                className="w-5 h-5 text-gray-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -442,12 +497,12 @@ const PuntoVenta = () => {
           </div>
 
           {/* Cart Items */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="flex-1 overflow-y-auto px-4 py-3">
             {cart.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                <div className="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center mb-4">
                   <svg
-                    className="w-10 h-10 text-gray-400"
+                    className="w-8 h-8 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -460,36 +515,36 @@ const PuntoVenta = () => {
                     />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-base font-medium text-gray-900 mb-2">
                   Tu carrito está vacío
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-sm text-gray-500">
                   Agrega algunos productos para comenzar
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {cart.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow"
+                    className="bg-white border border-gray-100 rounded-xl p-3 hover:shadow-sm transition-shadow"
                   >
-                    <div className="flex items-start space-x-4">
+                    <div className="flex items-start space-x-3">
                       {/* Product Image */}
                       <div className="flex-shrink-0">
                         {item.imagen ? (
                           <img
                             src={`${API_ENDPOINTS.BASE_URL}/api/imagenes/productos/${item.imagen}`}
                             alt={item.nombre}
-                            className="w-16 h-16 object-cover rounded-lg border"
+                            className="w-14 h-14 object-cover rounded-lg border"
                             onError={(e) => {
                               e.target.onerror = null;
                               e.target.src =
-                                "https://via.placeholder.com/64x64/f3f4f6/9ca3af?text=?";
+                                "https://via.placeholder.com/56x56/f3f4f6/9ca3af?text=?";
                             }}
                           />
                         ) : (
-                          <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center border">
+                          <div className="w-14 h-14 bg-gray-50 rounded-lg flex items-center justify-center border">
                             <span className="text-2xl">📦</span>
                           </div>
                         )}
@@ -497,22 +552,25 @@ const PuntoVenta = () => {
 
                       {/* Product Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-start justify-between mb-2">
                           <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 text-base mb-1 leading-tight">
+                            <h3 className="font-medium text-gray-900 text-sm mb-1 leading-tight">
                               {item.nombre}
                             </h3>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-xs text-gray-500">
                               {item.categoria_nombre}
                             </p>
                           </div>
                           <button
-                            onClick={() => removeFromCart(item.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeFromCart(item.id);
+                            }}
                             className="text-gray-400 hover:text-red-500 transition-colors p-1"
                             title="Eliminar producto"
                           >
                             <svg
-                              className="w-5 h-5"
+                              className="w-4 h-4"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -529,15 +587,16 @@ const PuntoVenta = () => {
 
                         {/* Quantity Controls & Price */}
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3 bg-gray-50 rounded-lg p-1">
+                          <div className="flex items-center space-x-2 bg-gray-50 rounded-lg p-1">
                             <button
-                              onClick={() =>
-                                updateQuantity(item.id, item.cantidad - 1)
-                              }
-                              className="w-8 h-8 flex items-center justify-center rounded-md bg-white border hover:bg-gray-50 transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateQuantity(item.id, item.cantidad - 1);
+                              }}
+                              className="w-7 h-7 flex items-center justify-center rounded-md bg-white border hover:bg-gray-50 transition-colors"
                             >
                               <svg
-                                className="w-4 h-4"
+                                className="w-3 h-3"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -550,17 +609,18 @@ const PuntoVenta = () => {
                                 />
                               </svg>
                             </button>
-                            <span className="w-8 text-center font-semibold text-gray-900">
+                            <span className="w-7 text-center font-medium text-gray-900 text-sm">
                               {item.cantidad}
                             </span>
                             <button
-                              onClick={() =>
-                                updateQuantity(item.id, item.cantidad + 1)
-                              }
-                              className="w-8 h-8 flex items-center justify-center rounded-md bg-white border hover:bg-gray-50 transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateQuantity(item.id, item.cantidad + 1);
+                              }}
+                              className="w-7 h-7 flex items-center justify-center rounded-md bg-white border hover:bg-gray-50 transition-colors"
                             >
                               <svg
-                                className="w-4 h-4"
+                                className="w-3 h-3"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -576,10 +636,10 @@ const PuntoVenta = () => {
                           </div>
 
                           <div className="text-right">
-                            <p className="text-lg font-bold text-blue-600">
+                            <p className="text-base font-bold text-blue-600">
                               {formatCurrency(item.precio * item.cantidad)}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-xs text-gray-500">
                               {formatCurrency(item.precio)} c/u
                             </p>
                           </div>
@@ -594,7 +654,7 @@ const PuntoVenta = () => {
 
           {/* Footer - Checkout Section */}
           {cart.length > 0 && (
-            <div className="border-t bg-white p-6 space-y-4">
+            <div className="border-t bg-white p-4 space-y-4">
               {/* Totals */}
               <div className="bg-gray-50 rounded-xl p-4 space-y-2">
                 <div className="flex justify-between text-sm text-gray-600">
@@ -614,7 +674,7 @@ const PuntoVenta = () => {
                     <span className="text-lg font-bold text-gray-900">
                       Total
                     </span>
-                    <span className="text-2xl font-bold text-blue-600">
+                    <span className="text-xl font-bold text-blue-600">
                       {formatCurrency(calculateTotal())}
                     </span>
                   </div>
@@ -622,7 +682,7 @@ const PuntoVenta = () => {
               </div>
 
               {/* Payment Method Selection */}
-              <div className="bg-white border border-gray-200 rounded-xl p-4">
+              <div className="bg-white border border-gray-100 rounded-xl p-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Método de Pago
                 </label>
@@ -632,11 +692,11 @@ const PuntoVenta = () => {
                     className={`p-3 rounded-lg border-2 text-center transition-all ${
                       paymentMethod === "efectivo"
                         ? "border-blue-600 bg-blue-50 text-blue-700"
-                        : "border-gray-200 hover:border-blue-200"
+                        : "border-gray-100 hover:border-blue-200"
                     }`}
                   >
                     <svg
-                      className="w-6 h-6 mx-auto mb-1"
+                      className="w-5 h-5 mx-auto mb-1"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -655,11 +715,11 @@ const PuntoVenta = () => {
                     className={`p-3 rounded-lg border-2 text-center transition-all ${
                       paymentMethod === "tarjeta"
                         ? "border-blue-600 bg-blue-50 text-blue-700"
-                        : "border-gray-200 hover:border-blue-200"
+                        : "border-gray-100 hover:border-blue-200"
                     }`}
                   >
                     <svg
-                      className="w-6 h-6 mx-auto mb-1"
+                      className="w-5 h-5 mx-auto mb-1"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -678,11 +738,11 @@ const PuntoVenta = () => {
                     className={`p-3 rounded-lg border-2 text-center transition-all ${
                       paymentMethod === "transferencia"
                         ? "border-blue-600 bg-blue-50 text-blue-700"
-                        : "border-gray-200 hover:border-blue-200"
+                        : "border-gray-100 hover:border-blue-200"
                     }`}
                   >
                     <svg
-                      className="w-6 h-6 mx-auto mb-1"
+                      className="w-5 h-5 mx-auto mb-1"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -703,7 +763,7 @@ const PuntoVenta = () => {
               <button
                 onClick={handleCheckout}
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-3 disabled:opacity-50"
+                className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -713,7 +773,7 @@ const PuntoVenta = () => {
                 ) : (
                   <>
                     <svg
-                      className="w-6 h-6"
+                      className="w-5 h-5"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -731,16 +791,16 @@ const PuntoVenta = () => {
               </button>
 
               {/* Quick Actions */}
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <button
                   onClick={() => setCart([])}
-                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                  className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
                 >
                   Vaciar Carrito
                 </button>
                 <button
                   onClick={() => setShowCart(false)}
-                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                  className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
                 >
                   Seguir Comprando
                 </button>

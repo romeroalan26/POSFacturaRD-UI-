@@ -53,6 +53,16 @@ const usersService = {
         } catch (error) {
             throw error;
         }
+    },
+
+    // Eliminar usuario
+    async deleteUser(userId) {
+        try {
+            const response = await axiosInstance.delete(`/api/usuarios/${userId}`);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
     }
 };
 

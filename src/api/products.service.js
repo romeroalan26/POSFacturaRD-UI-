@@ -25,6 +25,9 @@ const productsService = {
 
     async createProduct(productData) {
         try {
+            if (productData.precio_compra >= productData.precio) {
+                throw new Error('El precio de compra debe ser menor que el precio de venta');
+            }
             const response = await axiosInstance.post('/api/productos', productData);
             return response.data;
         } catch (error) {
@@ -34,6 +37,9 @@ const productsService = {
 
     async updateProduct(id, productData) {
         try {
+            if (productData.precio_compra && productData.precio && productData.precio_compra >= productData.precio) {
+                throw new Error('El precio de compra debe ser menor que el precio de venta');
+            }
             const response = await axiosInstance.put(`/api/productos/${id}`, productData);
             return response.data;
         } catch (error) {

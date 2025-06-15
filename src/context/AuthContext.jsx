@@ -8,12 +8,20 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar si hay un usuario guardado al cargar la aplicación
-    const storedUser = authService.getCurrentUser();
-    if (storedUser) {
-      setUser(storedUser);
-    }
-    setLoading(false);
+    const initializeAuth = async () => {
+      try {
+        const storedUser = authService.getCurrentUser();
+        if (storedUser) {
+          setUser(storedUser);
+        }
+      } catch (error) {
+        console.error("Error al inicializar la autenticación:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email, password) => {
