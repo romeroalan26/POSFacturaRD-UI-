@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import reportsService from "../api/reports.service";
+import expensesService from "../api/expenses.service";
 import {
   BarChart,
   Bar,
@@ -16,6 +17,7 @@ import {
   Area,
   Pie,
   Cell,
+  PieChart,
 } from "recharts";
 import {
   Chart as ChartJS,
@@ -110,6 +112,11 @@ const Dashboard = () => {
   };
 
   const formatCurrency = (amount) => {
+    if (amount >= 1000000) {
+      return `RD$${(amount / 1000000).toFixed(1)}M`;
+    } else if (amount >= 1000) {
+      return `RD$${(amount / 1000).toFixed(1)}K`;
+    }
     return new Intl.NumberFormat("es-DO", {
       style: "currency",
       currency: "DOP",
@@ -308,147 +315,211 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
+
+            {/* Gráficos de Ingresos vs Gastos */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Gráfico circular de Ingresos vs Gastos */}
+              <div className="bg-white rounded-xl p-4 shadow-sm">
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4">
+                  Ingresos vs Gastos
+                </h3>
+                <div className="h-64 sm:h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={[
+                          {
+                            name: "Ingresos",
+                            value: resumenGeneral.total_ingresos,
+                          },
+                          {
+                            name: "Gastos",
+                            value: resumenGeneral.total_gastos,
+                          },
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({
+                          cx,
+                          cy,
+                          midAngle,
+                          innerRadius,
+                          outerRadius,
+                          value,
+                          index,
+                        }) => {
+                          const RADIAN = Math.PI / 180;
+                          const radius =
+                            25 + innerRadius + (outerRadius - innerRadius);
+                          const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                          const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+                          return (
+                            <text
+                              x={x}
+                              y={y}
+                              fill={index === 0 ? "#059669" : "#dc2626"}
+                              textAnchor={x > cx ? "start" : "end"}
+                              dominantBaseline="central"
+                              className="text-sm font-medium"
+                            >
+                              {index === 0 ? "Ingresos" : "Gastos"}:{" "}
+                              {formatCurrency(value)}
+                            </text>
+                          );
+                        }}
+                      >
+                        {[
+                          {
+                            name: "Ingresos",
+                            value: resumenGeneral.total_ingresos,
+                          },
+                          {
+                            name: "Gastos",
+                            value: resumenGeneral.total_gastos,
+                          },
+                        ].map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={index === 0 ? "#059669" : "#dc2626"}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value) => formatCurrency(value)}
+                        contentStyle={{
+                          backgroundColor: "white",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "0.5rem",
+                          padding: "0.5rem",
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Tabla de Productos más Vendidos */}
+              <div className="bg-white rounded-xl p-4 shadow-sm">
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4">
+                  Productos más Vendidos
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Producto
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Categoría
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Unidades Vendidas
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Ingresos
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Ganancia
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {productosMasVendidos.map((producto, index) => (
+                        <tr
+                          key={producto.id}
+                          className="hover:bg-gray-50 transition-colors duration-150"
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <span className="text-indigo-600 font-semibold">
+                                  {index + 1}
+                                </span>
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {producto.nombre}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  ID: {producto.id}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                              {producto.categoria}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                <div
+                                  className="bg-blue-600 h-2.5 rounded-full"
+                                  style={{
+                                    width: `${
+                                      (producto.total_ventas /
+                                        productosMasVendidos[0].total_ventas) *
+                                      100
+                                    }%`,
+                                  }}
+                                ></div>
+                              </div>
+                              <span className="text-sm text-gray-900 font-medium">
+                                {producto.total_ventas}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {formatCurrency(producto.total_ingresos)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <span
+                                className={`text-sm font-medium ${
+                                  producto.ganancia_total >= 0
+                                    ? "text-green-600"
+                                    : "text-red-600"
+                                }`}
+                              >
+                                {formatCurrency(producto.ganancia_total)}
+                              </span>
+                              <span className="ml-2 text-xs text-gray-500">
+                                ({producto.margen_ganancia}%)
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
         </Accordion>
       )}
-
-      {/* Productos Más Vendidos */}
-      <Accordion title="Productos Más Vendidos">
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Producto
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Categoría
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Unidades Vendidas
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Ingresos
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Ganancia
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {productosMasVendidos.map((producto, index) => (
-                  <tr
-                    key={producto.id}
-                    className="hover:bg-gray-50 transition-colors duration-150"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                          <span className="text-indigo-600 font-semibold">
-                            {index + 1}
-                          </span>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {producto.nombre}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            ID: {producto.id}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                        {producto.categoria}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
-                          <div
-                            className="bg-blue-600 h-2.5 rounded-full"
-                            style={{
-                              width: `${
-                                (producto.total_ventas /
-                                  productosMasVendidos[0].total_ventas) *
-                                100
-                              }%`,
-                            }}
-                          ></div>
-                        </div>
-                        <span className="text-sm text-gray-900 font-medium">
-                          {producto.total_ventas}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatCurrency(producto.total_ingresos)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <span
-                          className={`text-sm font-medium ${
-                            producto.ganancia_total >= 0
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {formatCurrency(producto.ganancia_total)}
-                        </span>
-                        <span className="ml-2 text-xs text-gray-500">
-                          ({producto.margen_ganancia}%)
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {productosMasVendidos.length === 0 && (
-            <div className="text-center py-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                <svg
-                  className="w-8 h-8 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-1">
-                No hay datos disponibles
-              </h3>
-              <p className="text-gray-500">
-                No se encontraron productos vendidos en el período seleccionado.
-              </p>
-            </div>
-          )}
-        </div>
-      </Accordion>
 
       {/* Productos Bajo Stock */}
       <Accordion title="Productos Bajo Stock">
@@ -497,45 +568,6 @@ const Dashboard = () => {
             <p className="text-gray-500">No hay productos con bajo stock</p>
           </div>
         )}
-      </Accordion>
-
-      {/* Gráfico de Ganancias por Producto */}
-      <Accordion title="Ganancias por Producto">
-        <div className="h-64 md:h-96">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={ganancias}
-              margin={{
-                top: 20,
-                right: 30,
-                left: 20,
-                bottom: 70,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="nombre_producto"
-                angle={-45}
-                textAnchor="end"
-                height={100}
-                interval={0}
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip
-                formatter={(value) => formatCurrency(value)}
-                labelFormatter={(label) => `Producto: ${label}`}
-                contentStyle={{ fontSize: "12px" }}
-              />
-              <Legend wrapperStyle={{ fontSize: "12px" }} />
-              <Bar
-                dataKey="ganancia_total"
-                name="Ganancia Total"
-                fill="#10b981"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
       </Accordion>
     </div>
   );
