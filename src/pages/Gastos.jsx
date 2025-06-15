@@ -139,9 +139,9 @@ const Gastos = () => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("es-MX", {
+    return new Intl.NumberFormat("es-DO", {
       style: "currency",
-      currency: "MXN",
+      currency: "DOP",
     }).format(amount);
   };
 

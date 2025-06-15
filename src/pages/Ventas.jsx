@@ -144,7 +144,9 @@ export default function Ventas() {
     return new Intl.NumberFormat("es-DO", {
       style: "currency",
       currency: "DOP",
-    }).format(amount);
+    })
+      .format(amount)
+      .replace("DOP", "RD$");
   };
 
   const formatPercentage = (value) => {
