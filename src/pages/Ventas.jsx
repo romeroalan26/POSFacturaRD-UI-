@@ -168,46 +168,46 @@ export default function Ventas() {
     <div className="min-h-screen bg-gray-50">
       {/* Header con resumen */}
       <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">
                 Historial de Ventas
               </h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-xs sm:text-sm text-gray-500">
                 Gestiona y visualiza todas tus ventas
               </p>
             </div>
-            <div className="flex flex-wrap gap-3 sm:gap-4 w-full sm:w-auto">
-              <div className="bg-blue-50 px-3 sm:px-4 py-2 sm:py-3 rounded-lg flex-1 sm:flex-none min-w-[140px]">
-                <p className="text-sm text-blue-600 font-medium">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-4 w-full sm:w-auto">
+              <div className="bg-blue-50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg">
+                <p className="text-xs sm:text-sm text-blue-600 font-medium">
                   Total Ventas
                 </p>
-                <p className="text-lg sm:text-2xl font-bold text-blue-700">
+                <p className="text-base sm:text-2xl font-bold text-blue-700">
                   {totalVentas}
                 </p>
               </div>
-              <div className="bg-green-50 px-3 sm:px-4 py-2 sm:py-3 rounded-lg flex-1 sm:flex-none min-w-[140px]">
-                <p className="text-sm text-green-600 font-medium">
+              <div className="bg-green-50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg">
+                <p className="text-xs sm:text-sm text-green-600 font-medium">
                   Ingresos Totales
                 </p>
-                <p className="text-lg sm:text-2xl font-bold text-green-700">
+                <p className="text-base sm:text-2xl font-bold text-green-700">
                   {formatCurrency(totalIngresos)}
                 </p>
               </div>
-              <div className="bg-indigo-50 px-3 sm:px-4 py-2 sm:py-3 rounded-lg flex-1 sm:flex-none min-w-[140px]">
-                <p className="text-sm text-indigo-600 font-medium">
+              <div className="bg-indigo-50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg">
+                <p className="text-xs sm:text-sm text-indigo-600 font-medium">
                   Ganancias Totales
                 </p>
-                <p className="text-lg sm:text-2xl font-bold text-indigo-700">
+                <p className="text-base sm:text-2xl font-bold text-indigo-700">
                   {formatCurrency(totalGanancias)}
                 </p>
               </div>
-              <div className="bg-purple-50 px-3 sm:px-4 py-2 sm:py-3 rounded-lg flex-1 sm:flex-none min-w-[140px]">
-                <p className="text-sm text-purple-600 font-medium">
+              <div className="bg-purple-50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg">
+                <p className="text-xs sm:text-sm text-purple-600 font-medium">
                   Margen Promedio
                 </p>
-                <p className="text-lg sm:text-2xl font-bold text-purple-700">
+                <p className="text-base sm:text-2xl font-bold text-purple-700">
                   {formatPercentage(margenPromedio)}
                 </p>
               </div>
@@ -217,11 +217,11 @@ export default function Ventas() {
       </div>
 
       {/* Filtros */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-6">
+        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 mb-4 sm:mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 Fecha inicio
               </label>
               <input
@@ -234,11 +234,11 @@ export default function Ventas() {
                     .toISOString()
                     .split("T")[0]
                 }
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs sm:text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 Fecha fin
               </label>
               <input
@@ -246,18 +246,18 @@ export default function Ventas() {
                 name="fecha_fin"
                 value={filtros.fecha_fin}
                 onChange={handleFiltroChange}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs sm:text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 Método de pago
               </label>
               <select
                 name="metodo_pago"
                 value={filtros.metodo_pago}
                 onChange={handleFiltroChange}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs sm:text-sm"
               >
                 {METODOS_PAGO.map((m) => (
                   <option key={m.value} value={m.value}>
@@ -269,7 +269,7 @@ export default function Ventas() {
             <div className="flex items-end">
               <button
                 onClick={handleBuscar}
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors text-sm"
+                className="w-full bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors text-xs sm:text-sm"
               >
                 Buscar
               </button>
@@ -279,13 +279,13 @@ export default function Ventas() {
 
         {/* Vista de ventas */}
         {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="flex items-center justify-center h-48 sm:h-64">
+            <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : ventas.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-center py-8 sm:py-12">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -297,10 +297,10 @@ export default function Ventas() {
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
+            <h3 className="mt-2 text-sm sm:text-base font-medium text-gray-900">
               No hay ventas
             </h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-xs sm:text-sm text-gray-500">
               No se encontraron ventas con los filtros seleccionados.
             </p>
           </div>
@@ -371,65 +371,65 @@ export default function Ventas() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {ventas.map((venta) => (
               <div
                 key={venta.id}
-                className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow"
+                className="bg-white rounded-lg shadow-sm p-3 sm:p-4 hover:shadow-md transition-shadow"
               >
-                <div className="flex justify-between items-start mb-4">
+                <div className="flex justify-between items-start mb-3 sm:mb-4">
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900">
+                    <h3 className="text-base sm:text-lg font-medium text-gray-900">
                       Venta #{venta.id}
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs sm:text-sm text-gray-500">
                       {formatearFecha(venta.fecha)}
                     </p>
                   </div>
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize text-${getMetodoPagoColor(
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize text-${getMetodoPagoColor(
                       venta.metodo_pago
                     )}-800 bg-${getMetodoPagoColor(venta.metodo_pago)}-100`}
                   >
                     {venta.metodo_pago}
                   </span>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-gray-500">Subtotal</span>
                     <span className="text-gray-900">
                       {formatCurrency(venta.subtotal)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-gray-500">ITBIS</span>
                     <span className="text-gray-900">
                       {formatCurrency(venta.itbis_total)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-gray-500">Total</span>
                     <span className="font-medium text-gray-900">
                       {formatCurrency(venta.total_final)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-indigo-500">Ganancia</span>
                     <span className="font-medium text-indigo-600">
                       {formatCurrency(venta.ganancia_total_venta)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-purple-500">Margen</span>
                     <span className="font-medium text-purple-600">
                       {formatPercentage(venta.margen_promedio)}
                     </span>
                   </div>
                 </div>
-                <div className="mt-4">
+                <div className="mt-3 sm:mt-4">
                   <button
                     onClick={() => abrirModal(venta)}
-                    className="w-full text-center text-sm text-indigo-600 hover:text-indigo-900"
+                    className="w-full text-center text-xs sm:text-sm text-indigo-600 hover:text-indigo-900"
                   >
                     Ver detalles
                   </button>
@@ -440,12 +440,12 @@ export default function Ventas() {
         )}
 
         {/* Paginación */}
-        <div className="mt-6 flex justify-center">
+        <div className="mt-4 sm:mt-6 flex justify-center">
           <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
             <button
               onClick={() => setPage(page - 1)}
               disabled={page === 1}
-              className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+              className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-xs sm:text-sm font-medium ${
                 page === 1
                   ? "text-gray-300 cursor-not-allowed"
                   : "text-gray-500 hover:bg-gray-50"
@@ -453,7 +453,7 @@ export default function Ventas() {
             >
               <span className="sr-only">Anterior</span>
               <svg
-                className="h-5 w-5"
+                className="h-4 w-4 sm:h-5 sm:w-5"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
@@ -469,7 +469,7 @@ export default function Ventas() {
             <button
               onClick={() => setPage(page + 1)}
               disabled={page === totalPages}
-              className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+              className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-xs sm:text-sm font-medium ${
                 page === totalPages
                   ? "text-gray-300 cursor-not-allowed"
                   : "text-gray-500 hover:bg-gray-50"
@@ -477,7 +477,7 @@ export default function Ventas() {
             >
               <span className="sr-only">Siguiente</span>
               <svg
-                className="h-5 w-5"
+                className="h-4 w-4 sm:h-5 sm:w-5"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
@@ -496,22 +496,28 @@ export default function Ventas() {
 
       {/* Modal de detalles */}
       {showModal && ventaSeleccionada && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-start">
+            <div className="p-3 sm:p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900">
                     Detalles de la Venta #{ventaSeleccionada.id}
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-xs sm:text-sm text-gray-500">
                     {formatearFecha(ventaSeleccionada.fecha)}
                   </p>
+                  <p className="mt-1 text-xs sm:text-sm">
+                    <span className="text-gray-600">Vendedor: </span>
+                    <span className="font-medium text-blue-600">
+                      {ventaSeleccionada.usuario?.nombre || "No especificado"}
+                    </span>
+                  </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                   <button
                     onClick={() => setShowDevolucionModal(true)}
-                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                   >
                     Devolver Venta
                   </button>
@@ -521,7 +527,7 @@ export default function Ventas() {
                   >
                     <span className="sr-only">Cerrar</span>
                     <svg
-                      className="h-6 w-6"
+                      className="h-5 w-5 sm:h-6 sm:w-6"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -538,30 +544,32 @@ export default function Ventas() {
               </div>
 
               {/* Resumen de la venta */}
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-gray-50 px-4 py-3 rounded-lg">
-                  <p className="text-sm text-gray-500">Subtotal</p>
-                  <p className="mt-1 text-lg font-semibold text-gray-900">
+              <div className="mt-4 sm:mt-6 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+                <div className="bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
+                  <p className="text-xs sm:text-sm text-gray-500">Subtotal</p>
+                  <p className="mt-1 text-base sm:text-lg font-semibold text-gray-900">
                     {formatCurrency(ventaSeleccionada.subtotal)}
                   </p>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 rounded-lg">
-                  <p className="text-sm text-gray-500">ITBIS</p>
-                  <p className="mt-1 text-lg font-semibold text-gray-900">
+                <div className="bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
+                  <p className="text-xs sm:text-sm text-gray-500">ITBIS</p>
+                  <p className="mt-1 text-base sm:text-lg font-semibold text-gray-900">
                     {formatCurrency(ventaSeleccionada.itbis_total)}
                   </p>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 rounded-lg">
-                  <p className="text-sm text-gray-500">Total</p>
-                  <p className="mt-1 text-lg font-semibold text-gray-900">
+                <div className="bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
+                  <p className="text-xs sm:text-sm text-gray-500">Total</p>
+                  <p className="mt-1 text-base sm:text-lg font-semibold text-gray-900">
                     {formatCurrency(ventaSeleccionada.total_final)}
                   </p>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 rounded-lg">
-                  <p className="text-sm text-gray-500">Método de Pago</p>
+                <div className="bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
+                  <p className="text-xs sm:text-sm text-gray-500">
+                    Método de Pago
+                  </p>
                   <p className="mt-1">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize text-${getMetodoPagoColor(
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize text-${getMetodoPagoColor(
                         ventaSeleccionada.metodo_pago
                       )}-800 bg-${getMetodoPagoColor(
                         ventaSeleccionada.metodo_pago
@@ -574,40 +582,44 @@ export default function Ventas() {
               </div>
 
               {/* Información de ganancias */}
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-indigo-50 px-4 py-3 rounded-lg">
-                  <p className="text-sm text-indigo-600">Ganancia Total</p>
-                  <p className="mt-1 text-lg font-semibold text-indigo-900">
+              <div className="mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                <div className="bg-indigo-50 px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
+                  <p className="text-xs sm:text-sm text-indigo-600">
+                    Ganancia Total
+                  </p>
+                  <p className="mt-1 text-base sm:text-lg font-semibold text-indigo-900">
                     {formatCurrency(ventaSeleccionada.ganancia_total_venta)}
                   </p>
                 </div>
-                <div className="bg-purple-50 px-4 py-3 rounded-lg">
-                  <p className="text-sm text-purple-600">Margen Promedio</p>
-                  <p className="mt-1 text-lg font-semibold text-purple-900">
+                <div className="bg-purple-50 px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
+                  <p className="text-xs sm:text-sm text-purple-600">
+                    Margen Promedio
+                  </p>
+                  <p className="mt-1 text-base sm:text-lg font-semibold text-purple-900">
                     {formatPercentage(ventaSeleccionada.margen_promedio)}
                   </p>
                 </div>
               </div>
 
               {/* Lista de productos */}
-              <div className="mt-6">
-                <h4 className="text-sm font-medium text-gray-900">
+              <div className="mt-4 sm:mt-6">
+                <h4 className="text-xs sm:text-sm font-medium text-gray-900">
                   Productos vendidos
                 </h4>
-                <div className="mt-3 overflow-x-auto">
+                <div className="mt-2 sm:mt-3 overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Producto
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Cantidad
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Precio Unit.
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Subtotal
                         </th>
                       </tr>
@@ -615,16 +627,16 @@ export default function Ventas() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {ventaSeleccionada.productos.map((producto, index) => (
                         <tr key={index}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                             {producto.nombre_producto}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                             {producto.cantidad}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                             {formatCurrency(producto.precio_unitario)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                             {formatCurrency(
                               producto.cantidad * producto.precio_unitario
                             )}
@@ -642,11 +654,11 @@ export default function Ventas() {
 
       {/* Modal de confirmación de devolución */}
       {showDevolucionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-3 sm:p-6">
             <div className="text-center">
               <svg
-                className="mx-auto h-12 w-12 text-red-600"
+                className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-red-600"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -658,54 +670,26 @@ export default function Ventas() {
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                 />
               </svg>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">
+              <h3 className="mt-2 text-base sm:text-lg font-medium text-gray-900">
                 Confirmar Devolución
               </h3>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-1 text-xs sm:text-sm text-gray-500">
                 ¿Estás seguro de que deseas devolver esta venta? Esta acción no
                 se puede deshacer.
               </p>
-              <div className="mt-6 flex justify-center gap-3">
+              <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <button
-                  type="button"
-                  className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                   onClick={() => setShowDevolucionModal(false)}
-                  disabled={devolucionLoading}
+                  className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Cancelar
                 </button>
                 <button
-                  type="button"
-                  className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                   onClick={handleDevolucion}
                   disabled={devolucionLoading}
+                  className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-transparent rounded-md text-xs sm:text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {devolucionLoading ? (
-                    <>
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      Procesando...
-                    </>
-                  ) : (
-                    "Confirmar Devolución"
-                  )}
+                  {devolucionLoading ? "Procesando..." : "Confirmar Devolución"}
                 </button>
               </div>
             </div>
@@ -715,13 +699,13 @@ export default function Ventas() {
 
       {/* Mensajes de éxito y error */}
       {showSuccess && (
-        <div className="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+        <div className="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-3 sm:px-4 py-2 sm:py-3 rounded text-xs sm:text-sm">
           {successMessage}
         </div>
       )}
 
       {error && (
-        <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded text-xs sm:text-sm">
           {error}
         </div>
       )}
