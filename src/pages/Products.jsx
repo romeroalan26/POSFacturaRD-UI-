@@ -34,6 +34,7 @@ const Products = () => {
   const [viewMode, setViewMode] = useState("list");
   const [sortField, setSortField] = useState("nombre");
   const [sortDirection, setSortDirection] = useState("asc");
+  const [activeTab, setActiveTab] = useState("productos");
   const itemsPerPage = 10;
   const [successMessage, setSuccessMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -319,6 +320,29 @@ const Products = () => {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="flex space-x-4 mb-4">
+          <button
+            onClick={() => setActiveTab("productos")}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              activeTab === "productos"
+                ? "bg-indigo-600 text-white"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            Productos
+          </button>
+          <button
+            onClick={() => setActiveTab("servicios")}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              activeTab === "servicios"
+                ? "bg-indigo-600 text-white"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            Servicios
+          </button>
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="flex-1 w-full sm:w-auto flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
@@ -339,7 +363,9 @@ const Products = () => {
               </div>
               <input
                 type="text"
-                placeholder="Buscar productos..."
+                placeholder={`Buscar ${
+                  activeTab === "productos" ? "productos" : "servicios"
+                }...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -362,21 +388,43 @@ const Products = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-2 rounded-md ${
+                  viewMode === "list"
+                    ? "bg-indigo-100 text-indigo-600"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                  />
+                </svg>
+              </button>
               <button
                 onClick={() => setViewMode("grid")}
                 className={`p-2 rounded-md ${
                   viewMode === "grid"
-                    ? "bg-white shadow-sm text-gray-900"
-                    : "text-gray-500 hover:text-gray-900"
+                    ? "bg-indigo-100 text-indigo-600"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                 }`}
               >
                 <svg
-                  className="w-5 h-5"
+                  className="h-5 w-5"
                   fill="none"
-                  stroke="currentColor"
                   viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
                   <path
                     strokeLinecap="round"
@@ -386,16 +434,32 @@ const Products = () => {
                   />
                 </svg>
               </button>
+            </div>
+
+            {activeTab === "productos" && (
               <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 rounded-md ${
-                  viewMode === "list"
-                    ? "bg-white shadow-sm text-gray-900"
-                    : "text-gray-500 hover:text-gray-900"
-                }`}
+                onClick={() => {
+                  setEditingProduct(null);
+                  setFormData({
+                    nombre: "",
+                    precio: "",
+                    precio_compra: "",
+                    stock: "",
+                    stock_minimo: "",
+                    con_itbis: true,
+                    categoria_id: "",
+                    imagen: "",
+                    is_active: true,
+                  });
+                  setSelectedImage(null);
+                  setPreviewImage(null);
+                  setImageFile(null);
+                  setShowModal(true);
+                }}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 <svg
-                  className="w-5 h-5"
+                  className="-ml-1 mr-2 h-5 w-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -404,48 +468,12 @@ const Products = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
+                    d="M12 4v16m8-8H4"
                   />
                 </svg>
+                Agregar Producto
               </button>
-            </div>
-
-            <button
-              onClick={() => {
-                setEditingProduct(null);
-                setFormData({
-                  nombre: "",
-                  precio: "",
-                  precio_compra: "",
-                  stock: "",
-                  stock_minimo: "",
-                  con_itbis: true,
-                  categoria_id: "",
-                  imagen: "",
-                  is_active: true,
-                });
-                setSelectedImage(null);
-                setPreviewImage(null);
-                setImageFile(null);
-                setShowModal(true);
-              }}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              <svg
-                className="-ml-1 mr-2 h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Agregar Producto
-            </button>
+            )}
           </div>
         </div>
       </div>
@@ -462,313 +490,329 @@ const Products = () => {
         </div>
       )}
 
-      {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {getSortedProducts().map((product) => (
-            <div
-              key={product.id}
-              className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-all duration-200 border border-gray-100"
-            >
-              <div className="relative">
-                <div className="aspect-w-16 aspect-h-9 bg-gray-50">
-                  <ProductImage
-                    imageName={product.imagen}
-                    alt={product.nombre}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="absolute top-2 right-2">
-                  <span
-                    className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      product.is_active
-                        ? "bg-green-50 text-green-700"
-                        : "bg-red-50 text-red-700"
-                    }`}
-                  >
-                    {product.is_active ? "Activo" : "Inactivo"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-3">
-                <div className="mb-2">
-                  <h3 className="text-sm font-medium text-gray-900 mb-0.5 line-clamp-2">
-                    {product.nombre}
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    {categories.find((c) => c.id === product.categoria_id)
-                      ?.nombre || "Sin categoría"}
-                  </p>
-                </div>
-
-                <div className="mb-3">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs text-gray-500">Precio:</span>
-                    <span className="text-base font-semibold text-indigo-600">
-                      ${Number(product.precio).toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex items-baseline justify-between mt-1">
-                    <span className="text-xs text-gray-500">Stock:</span>
-                    <span
-                      className={`text-sm font-medium ${
-                        product.stock <= product.stock_minimo
-                          ? "text-yellow-600"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      {product.stock}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEdit(product)}
-                    className="flex-1 bg-gray-50 text-gray-700 hover:bg-gray-100 px-2 py-1.5 rounded text-xs font-medium transition-colors duration-200 flex items-center justify-center gap-1"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-3.5 w-3.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(product.id)}
-                    className="flex-1 bg-gray-50 text-red-600 hover:bg-red-50 px-2 py-1.5 rounded text-xs font-medium transition-colors duration-200 flex items-center justify-center gap-1"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-3.5 w-3.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                    Eliminar
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
-            <div className="inline-block min-w-full align-middle">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Imagen
-                    </th>
-                    <th
-                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort("nombre")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Nombre</span>
-                        {sortField === "nombre" && (
-                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort("precio")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Precio Venta</span>
-                        {sortField === "precio" && (
-                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort("precio_compra")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Precio Compra</span>
-                        {sortField === "precio_compra" && (
-                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort("ganancia_unitaria")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Ganancia</span>
-                        {sortField === "ganancia_unitaria" && (
-                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort("margen_ganancia")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Margen</span>
-                        {sortField === "margen_ganancia" && (
-                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort("stock")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Stock</span>
-                        {sortField === "stock" && (
-                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort("stock_minimo")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Stock Mínimo</span>
-                        {sortField === "stock_minimo" && (
-                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort("categoria_id")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Categoría</span>
-                        {sortField === "categoria_id" && (
-                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort("is_active")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Estado</span>
-                        {sortField === "is_active" && (
-                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {getSortedProducts().map((product) => (
-                    <tr
-                      key={product.id}
-                      className="hover:bg-gray-50 transition-colors duration-150"
-                    >
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                        <ProductImage
-                          imageName={product.imagen}
-                          className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover"
-                        />
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm font-medium text-gray-900">
-                          {product.nombre}
-                        </div>
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm text-gray-900">
-                          ${Number(product.precio).toFixed(2)}
-                        </div>
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm text-gray-900">
-                          ${Number(product.precio_compra).toFixed(2)}
-                        </div>
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm text-gray-900">
-                          ${Number(product.ganancia_unitaria).toFixed(2)}
-                        </div>
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm text-gray-900">
-                          {Number(product.margen_ganancia).toFixed(2)}%
-                        </div>
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm text-gray-900">
-                          {product.stock}
-                        </div>
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm text-gray-900">
-                          {product.stock_minimo || "-"}
-                        </div>
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm text-gray-900">
-                          {categories.find((c) => c.id === product.categoria_id)
-                            ?.nombre || "Sin categoría"}
-                        </div>
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            product.is_active
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {product.is_active ? "Activo" : "Inactivo"}
-                        </span>
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleEdit(product)}
-                            className="text-indigo-600 hover:text-indigo-900"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => handleDelete(product.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      {activeTab === "servicios" ? (
+        <div className="flex items-center justify-center h-64 bg-white rounded-lg shadow-sm">
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Módulo de Servicios en Desarrollo
+            </h3>
+            <p className="text-gray-500">
+              Próximamente podrás gestionar servicios y combos de productos
+            </p>
           </div>
         </div>
+      ) : (
+        <>
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {getSortedProducts().map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-all duration-200 border border-gray-100"
+                >
+                  <div className="relative">
+                    <div className="aspect-w-16 aspect-h-9 bg-gray-50">
+                      <ProductImage
+                        imageName={product.imagen}
+                        alt={product.nombre}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          product.is_active
+                            ? "bg-green-50 text-green-700"
+                            : "bg-red-50 text-red-700"
+                        }`}
+                      >
+                        {product.is_active ? "Activo" : "Inactivo"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3">
+                    <div className="mb-2">
+                      <h3 className="text-sm font-medium text-gray-900 mb-0.5 line-clamp-2">
+                        {product.nombre}
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        {categories.find((c) => c.id === product.categoria_id)
+                          ?.nombre || "Sin categoría"}
+                      </p>
+                    </div>
+
+                    <div className="mb-3">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-xs text-gray-500">Precio:</span>
+                        <span className="text-base font-semibold text-indigo-600">
+                          ${Number(product.precio).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex items-baseline justify-between mt-1">
+                        <span className="text-xs text-gray-500">Stock:</span>
+                        <span
+                          className={`text-sm font-medium ${
+                            product.stock <= product.stock_minimo
+                              ? "text-yellow-600"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          {product.stock}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="flex-1 bg-gray-50 text-gray-700 hover:bg-gray-100 px-2 py-1.5 rounded text-xs font-medium transition-colors duration-200 flex items-center justify-center gap-1"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-3.5 w-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="flex-1 bg-gray-50 text-red-600 hover:bg-red-50 px-2 py-1.5 rounded text-xs font-medium transition-colors duration-200 flex items-center justify-center gap-1"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-3.5 w-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Imagen
+                        </th>
+                        <th
+                          className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleSort("nombre")}
+                        >
+                          <div className="flex items-center space-x-1">
+                            <span>Nombre</span>
+                            {sortField === "nombre" && (
+                              <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th
+                          className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleSort("precio")}
+                        >
+                          <div className="flex items-center space-x-1">
+                            <span>Precio Venta</span>
+                            {sortField === "precio" && (
+                              <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th
+                          className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleSort("precio_compra")}
+                        >
+                          <div className="flex items-center space-x-1">
+                            <span>Precio Compra</span>
+                            {sortField === "precio_compra" && (
+                              <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th
+                          className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleSort("ganancia_unitaria")}
+                        >
+                          <div className="flex items-center space-x-1">
+                            <span>Ganancia</span>
+                            {sortField === "ganancia_unitaria" && (
+                              <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th
+                          className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleSort("margen_ganancia")}
+                        >
+                          <div className="flex items-center space-x-1">
+                            <span>Margen</span>
+                            {sortField === "margen_ganancia" && (
+                              <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th
+                          className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleSort("stock")}
+                        >
+                          <div className="flex items-center space-x-1">
+                            <span>Stock</span>
+                            {sortField === "stock" && (
+                              <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th
+                          className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleSort("stock_minimo")}
+                        >
+                          <div className="flex items-center space-x-1">
+                            <span>Stock Mínimo</span>
+                            {sortField === "stock_minimo" && (
+                              <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th
+                          className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleSort("categoria_id")}
+                        >
+                          <div className="flex items-center space-x-1">
+                            <span>Categoría</span>
+                            {sortField === "categoria_id" && (
+                              <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th
+                          className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleSort("is_active")}
+                        >
+                          <div className="flex items-center space-x-1">
+                            <span>Estado</span>
+                            {sortField === "is_active" && (
+                              <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Acciones
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {getSortedProducts().map((product) => (
+                        <tr
+                          key={product.id}
+                          className="hover:bg-gray-50 transition-colors duration-150"
+                        >
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                            <ProductImage
+                              imageName={product.imagen}
+                              className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover"
+                            />
+                          </td>
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                            <div className="text-xs sm:text-sm font-medium text-gray-900">
+                              {product.nombre}
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                            <div className="text-xs sm:text-sm text-gray-900">
+                              ${Number(product.precio).toFixed(2)}
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                            <div className="text-xs sm:text-sm text-gray-900">
+                              ${Number(product.precio_compra).toFixed(2)}
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                            <div className="text-xs sm:text-sm text-gray-900">
+                              ${Number(product.ganancia_unitaria).toFixed(2)}
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                            <div className="text-xs sm:text-sm text-gray-900">
+                              {Number(product.margen_ganancia).toFixed(2)}%
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                            <div className="text-xs sm:text-sm text-gray-900">
+                              {product.stock}
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                            <div className="text-xs sm:text-sm text-gray-900">
+                              {product.stock_minimo || "-"}
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                            <div className="text-xs sm:text-sm text-gray-900">
+                              {categories.find(
+                                (c) => c.id === product.categoria_id
+                              )?.nombre || "Sin categoría"}
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                            <span
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                product.is_active
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {product.is_active ? "Activo" : "Inactivo"}
+                            </span>
+                          </td>
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleEdit(product)}
+                                className="text-indigo-600 hover:text-indigo-900"
+                              >
+                                Editar
+                              </button>
+                              <button
+                                onClick={() => handleDelete(product.id)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">

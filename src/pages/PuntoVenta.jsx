@@ -24,6 +24,7 @@ const PuntoVenta = () => {
   const [showCart, setShowCart] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [activeTab, setActiveTab] = useState("servicios");
   const productsPerPage = 20;
 
   // Debounce search
@@ -289,6 +290,30 @@ const PuntoVenta = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          {/* Tabs */}
+          <div className="flex space-x-4 mb-4">
+            <button
+              onClick={() => setActiveTab("servicios")}
+              className={`px-4 py-2 text-sm font-medium rounded-md ${
+                activeTab === "servicios"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              Servicios
+            </button>
+            <button
+              onClick={() => setActiveTab("productos")}
+              className={`px-4 py-2 text-sm font-medium rounded-md ${
+                activeTab === "productos"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              Productos
+            </button>
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
@@ -309,7 +334,9 @@ const PuntoVenta = () => {
               </div>
               <input
                 type="text"
-                placeholder="Buscar productos..."
+                placeholder={`Buscar ${
+                  activeTab === "productos" ? "productos" : "servicios"
+                }...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
@@ -356,6 +383,17 @@ const PuntoVenta = () => {
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        ) : activeTab === "servicios" ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Módulo de Servicios en Desarrollo
+              </h3>
+              <p className="text-gray-500">
+                Próximamente podrás vender servicios y combos de productos
+              </p>
+            </div>
           </div>
         ) : (
           <>
