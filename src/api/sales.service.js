@@ -109,6 +109,27 @@ const salesService = {
         } catch (error) {
             throw error;
         }
+    },
+
+    /**
+     * Exporta las ventas a CSV
+     * @param {Object} params - Parámetros de búsqueda
+     * @param {string} [params.fecha_inicio] - Fecha de inicio (YYYY-MM-DD)
+     * @param {string} [params.fecha_fin] - Fecha de fin (YYYY-MM-DD)
+     * @param {string} [params.metodo_pago] - Método de pago
+     * @returns {Promise<Blob>} Archivo CSV
+     */
+    async exportSales(params = {}) {
+        try {
+            const query = buildQuery(params);
+            const url = `${API_ENDPOINTS.SALES.EXPORT}${query ? `?${query}` : ''}`;
+            const response = await axiosInstance.get(url, {
+                responseType: 'blob'
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
     }
 };
 

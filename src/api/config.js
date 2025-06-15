@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
         LIST: '/api/ventas',
         CREATE: '/api/ventas',
         DETAIL: '/api/ventas/:id',
+        EXPORT: '/api/ventas/exportar',
     },
     CATEGORIES: {
         LIST: '/api/categorias',
