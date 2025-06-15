@@ -463,58 +463,106 @@ const Products = () => {
       )}
 
       {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {getSortedProducts().map((product) => (
             <div
               key={product.id}
-              className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
+              className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-all duration-200 border border-gray-100"
             >
-              <div className="aspect-w-16 aspect-h-9 bg-gray-100">
-                <ProductImage
-                  imageName={product.imagen}
-                  alt={product.nombre}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-3 sm:p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm sm:text-base font-medium text-gray-900 truncate">
-                    {product.nombre}
-                  </h3>
+              <div className="relative">
+                <div className="aspect-w-16 aspect-h-9 bg-gray-50">
+                  <ProductImage
+                    imageName={product.imagen}
+                    alt={product.nombre}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="absolute top-2 right-2">
                   <span
-                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${
                       product.is_active
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
+                        ? "bg-green-50 text-green-700"
+                        : "bg-red-50 text-red-700"
                     }`}
                   >
                     {product.is_active ? "Activo" : "Inactivo"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between mb-2 sm:mb-3">
-                  <span className="text-lg sm:text-xl font-bold text-indigo-600">
-                    ${Number(product.precio).toFixed(2)}
-                  </span>
-                  <span className="text-xs sm:text-sm text-gray-500">
-                    Stock: {product.stock}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
-                  <span>
-                    Compra: ${Number(product.precio_compra).toFixed(2)}
-                  </span>
-                  <span>
-                    Ganancia: ${Number(product.ganancia_unitaria).toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500 mt-1">
-                  <span>
-                    Margen: {Number(product.margen_ganancia).toFixed(2)}%
-                  </span>
-                  <span>
+              </div>
+
+              <div className="p-3">
+                <div className="mb-2">
+                  <h3 className="text-sm font-medium text-gray-900 mb-0.5 line-clamp-2">
+                    {product.nombre}
+                  </h3>
+                  <p className="text-xs text-gray-500">
                     {categories.find((c) => c.id === product.categoria_id)
                       ?.nombre || "Sin categoría"}
-                  </span>
+                  </p>
+                </div>
+
+                <div className="mb-3">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-xs text-gray-500">Precio:</span>
+                    <span className="text-base font-semibold text-indigo-600">
+                      ${Number(product.precio).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline justify-between mt-1">
+                    <span className="text-xs text-gray-500">Stock:</span>
+                    <span
+                      className={`text-sm font-medium ${
+                        product.stock <= product.stock_minimo
+                          ? "text-yellow-600"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      {product.stock}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(product)}
+                    className="flex-1 bg-gray-50 text-gray-700 hover:bg-gray-100 px-2 py-1.5 rounded text-xs font-medium transition-colors duration-200 flex items-center justify-center gap-1"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(product.id)}
+                    className="flex-1 bg-gray-50 text-red-600 hover:bg-red-50 px-2 py-1.5 rounded text-xs font-medium transition-colors duration-200 flex items-center justify-center gap-1"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    Eliminar
+                  </button>
                 </div>
               </div>
             </div>
