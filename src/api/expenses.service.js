@@ -47,6 +47,8 @@ const expensesService = {
 
     async createExpense(expenseData) {
         try {
+            console.log('Datos enviados al backend:', expenseData);
+            console.log('Fecha en los datos:', expenseData.fecha);
             const response = await axiosInstance.post(API_ENDPOINTS.EXPENSES.CREATE, expenseData);
             return response.data;
         } catch (error) {

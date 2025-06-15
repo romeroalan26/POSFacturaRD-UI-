@@ -2,6 +2,48 @@ import React, { useState, useEffect } from "react";
 import expensesService from "../api/expenses.service";
 
 const Gastos = () => {
+  // Función para obtener la fecha actual en formato YYYY-MM-DD
+  const getCurrentDate = () => {
+    const now = new Date();
+    // Asegurarnos de que la fecha esté en la zona horaria local
+    return now.toLocaleDateString("en-CA", {
+      timeZone: "America/Santo_Domingo",
+    });
+  };
+
+  // Función para convertir una fecha string a objeto Date
+  const parseDate = (dateString) => {
+    // Asegurarnos de que la fecha se interprete en la zona horaria local
+    const [year, month, day] = dateString.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  // Función para mostrar la fecha en formato local
+  const displayDate = (dateString) => {
+    try {
+      // Si la fecha ya está en formato YYYY-MM-DD
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        const date = parseDate(dateString);
+        return date.toLocaleDateString("en-US", {
+          timeZone: "America/Santo_Domingo",
+        });
+      }
+
+      // Si la fecha viene en otro formato (por ejemplo, ISO string)
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return "Fecha inválida";
+      }
+
+      return date.toLocaleDateString("en-US", {
+        timeZone: "America/Santo_Domingo",
+      });
+    } catch (error) {
+      console.error("Error al formatear fecha:", error);
+      return "Fecha inválida";
+    }
+  };
+
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +54,7 @@ const Gastos = () => {
     monto: "",
     descripcion: "",
     categoria_id: "",
-    fecha: new Date().toISOString().split("T")[0],
+    fecha: getCurrentDate(),
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -145,7 +187,7 @@ const Gastos = () => {
 
     if (name === "fecha") {
       // Validar que la fecha no sea futura
-      const selectedDate = new Date(value);
+      const selectedDate = parseDate(value);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -189,10 +231,15 @@ const Gastos = () => {
 
     try {
       setLoading(true);
+      const dataToSend = {
+        ...formData,
+        fecha: formData.fecha, // Ya está en formato YYYY-MM-DD
+      };
+
       if (editingExpense) {
-        await expensesService.updateExpense(editingExpense.id, formData);
+        await expensesService.updateExpense(editingExpense.id, dataToSend);
       } else {
-        await expensesService.createExpense(formData);
+        await expensesService.createExpense(dataToSend);
       }
       setShowModal(false);
       setEditingExpense(null);
@@ -200,7 +247,7 @@ const Gastos = () => {
         monto: "",
         descripcion: "",
         categoria_id: "",
-        fecha: new Date().toISOString().split("T")[0],
+        fecha: getCurrentDate(),
       });
       await Promise.all([fetchExpenses(), fetchResumenGeneral()]);
     } catch (err) {
@@ -223,7 +270,7 @@ const Gastos = () => {
       monto: expense.monto,
       descripcion: expense.descripcion,
       categoria_id: expense.categoria_id,
-      fecha: expense.fecha.split("T")[0],
+      fecha: expense.fecha,
     });
     setShowModal(true);
   };
@@ -554,7 +601,7 @@ const Gastos = () => {
                     monto: "",
                     descripcion: "",
                     categoria_id: "",
-                    fecha: new Date().toISOString().split("T")[0],
+                    fecha: getCurrentDate(),
                   });
                   setShowModal(true);
                 }}
@@ -676,7 +723,7 @@ const Gastos = () => {
                     {expenses.map((expense) => (
                       <tr key={expense.id} className="hover:bg-gray-50">
                         <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {new Date(expense.fecha).toLocaleDateString()}
+                          {displayDate(expense.fecha)}
                         </td>
                         <td className="px-3 sm:px-6 py-4 text-sm text-gray-900">
                           {expense.descripcion}
