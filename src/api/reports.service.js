@@ -30,16 +30,22 @@ const reportsService = {
         const response = await axiosInstance.get(url);
         if (response.data.data) {
             response.data.data = response.data.data
-                .map(item => ({
-                    ...item,
-                    total_ventas: Number(item.total_ventas) || 0,
-                    total_monto: parseFloat(item.total_monto) || 0,
-                    dia: new Date(item.dia).toLocaleDateString('es-DO', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric'
-                    })
-                }))
+                .map(item => {
+                    // Ajustar la fecha para manejar la zona horaria
+                    const fecha = new Date(item.dia);
+                    fecha.setHours(fecha.getHours() + fecha.getTimezoneOffset() / 60);
+
+                    return {
+                        ...item,
+                        total_ventas: Number(item.total_ventas) || 0,
+                        total_monto: parseFloat(item.total_monto) || 0,
+                        dia: fecha.toLocaleDateString('es-DO', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                        })
+                    };
+                })
                 .sort((a, b) => new Date(a.dia) - new Date(b.dia));
         }
         return response.data;

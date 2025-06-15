@@ -14,6 +14,8 @@ import {
   CartesianGrid,
   AreaChart,
   Area,
+  Pie,
+  Cell,
 } from "recharts";
 import {
   Chart as ChartJS,
@@ -21,7 +23,7 @@ import {
   Tooltip as ChartTooltip,
   Legend,
 } from "chart.js";
-import { Pie } from "react-chartjs-2";
+import { Pie as ReactPie } from "react-chartjs-2";
 import Accordion from "../components/Accordion";
 
 ChartJS.register(ArcElement, ChartTooltip, Legend);
@@ -49,82 +51,40 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [resumenGeneral, setResumenGeneral] = useState(null);
-  const [ventasDiarias, setVentasDiarias] = useState([]);
   const [productosMasVendidos, setProductosMasVendidos] = useState([]);
   const [productosBajoStock, setProductosBajoStock] = useState([]);
   const [ganancias, setGanancias] = useState([]);
-  const [ventasPorCategoria, setVentasPorCategoria] = useState([]);
-  const [resumenPorDia, setResumenPorDia] = useState([]);
-
-  // Función para obtener datos del resumen general por rangos de fechas
-  const fetchResumenPorDia = async () => {
-    try {
-      const startDate = new Date(dateRange.fecha_inicio);
-      const endDate = new Date(dateRange.fecha_fin);
-      const days = [];
-      const resumenData = [];
-
-      // Crear array de días entre fecha inicio y fin
-      for (
-        let d = new Date(startDate);
-        d <= endDate;
-        d.setDate(d.getDate() + 1)
-      ) {
-        days.push(new Date(d));
-      }
-
-      // Obtener datos para cada día
-      for (let i = 0; i < days.length; i++) {
-        const currentDate = days[i].toISOString().split("T")[0];
-        const response = await reportsService.getResumenGeneral({
-          fecha_inicio: currentDate,
-          fecha_fin: currentDate,
-        });
-
-        if (response.data) {
-          resumenData.push({
-            fecha: currentDate,
-            ingresos: Number(response.data.total_ingresos) || 0,
-            gastos: Number(response.data.total_gastos) || 0,
-          });
-        }
-      }
-
-      setResumenPorDia(resumenData);
-    } catch (error) {
-      console.error("Error al obtener resumen por día:", error);
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [
-          resumenData,
-          ventasData,
-          productosData,
-          gananciasData,
-          stockData,
-          ventasCategoriaData,
-        ] = await Promise.all([
-          reportsService.getResumenGeneral(dateRange),
-          reportsService.getVentasDiarias(dateRange),
-          reportsService.getProductosMasVendidos(dateRange),
-          reportsService.getGanancias(dateRange),
-          reportsService.getProductosBajoStock(),
-          reportsService.getVentasPorCategoria(dateRange),
-        ]);
+
+        // Ajustar las fechas para incluir todo el día
+        const adjustedDateRange = {
+          fecha_inicio: dateRange.fecha_inicio,
+          fecha_fin: dateRange.fecha_fin,
+        };
+
+        // Ajustar la fecha final para incluir todo el día
+        if (adjustedDateRange.fecha_fin) {
+          const endDate = new Date(adjustedDateRange.fecha_fin);
+          endDate.setHours(23, 59, 59, 999);
+          adjustedDateRange.fecha_fin = endDate.toISOString().split("T")[0];
+        }
+
+        const [resumenData, productosData, gananciasData, stockData] =
+          await Promise.all([
+            reportsService.getResumenGeneral(adjustedDateRange),
+            reportsService.getProductosMasVendidos(adjustedDateRange),
+            reportsService.getGanancias(adjustedDateRange),
+            reportsService.getProductosBajoStock(),
+          ]);
 
         setResumenGeneral(resumenData.data);
-        setVentasDiarias(ventasData.data);
         setProductosMasVendidos(productosData.data);
         setGanancias(gananciasData.data);
         setProductosBajoStock(stockData.data);
-        setVentasPorCategoria(ventasCategoriaData.data || []);
-
-        // Obtener datos del resumen por día
-        await fetchResumenPorDia();
       } catch (error) {
         setError(error.message);
       } finally {
@@ -345,117 +305,6 @@ const Dashboard = () => {
                     Productos vendidos:{" "}
                     {resumenGeneral.total_productos_vendidos}
                   </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Gráficos del Resumen General */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Gráfico de Tendencias */}
-              <div className="bg-white rounded-lg p-4 shadow">
-                <h4 className="text-lg font-semibold mb-4">
-                  Tendencia de Ventas
-                </h4>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                      data={ventasDiarias}
-                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                    >
-                      <defs>
-                        <linearGradient
-                          id="colorVentas"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor="#8b5cf6"
-                            stopOpacity={0.8}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="#8b5cf6"
-                            stopOpacity={0}
-                          />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="dia"
-                        tick={{ fontSize: 12 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                      />
-                      <YAxis
-                        tick={{ fontSize: 12 }}
-                        tickFormatter={(value) => formatCurrency(value)}
-                      />
-                      <Tooltip
-                        formatter={(value) => formatCurrency(value)}
-                        labelFormatter={(label) => `Fecha: ${label}`}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="total_monto"
-                        name="Monto Total"
-                        stroke="#8b5cf6"
-                        fillOpacity={1}
-                        fill="url(#colorVentas)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Gráfico de Ingresos vs Gastos */}
-              <div className="bg-white rounded-lg p-4 shadow">
-                <h4 className="text-lg font-semibold mb-4">
-                  Ingresos vs Gastos
-                </h4>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={resumenPorDia}
-                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="fecha"
-                        tick={{ fontSize: 12 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                      />
-                      <YAxis tick={{ fontSize: 12 }} />
-                      <Tooltip
-                        formatter={(value) => formatCurrency(value)}
-                        labelFormatter={(label) => `Fecha: ${label}`}
-                      />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="ingresos"
-                        name="Ingresos"
-                        stroke="#10b981"
-                        strokeWidth={2}
-                        dot={{ r: 4 }}
-                        activeDot={{ r: 6 }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="gastos"
-                        name="Gastos"
-                        stroke="#ef4444"
-                        strokeWidth={2}
-                        dot={{ r: 4 }}
-                        activeDot={{ r: 6 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
                 </div>
               </div>
             </div>
@@ -686,61 +535,6 @@ const Dashboard = () => {
               />
             </BarChart>
           </ResponsiveContainer>
-        </div>
-      </Accordion>
-
-      {/* Gráfico Circular de Ventas por Categoría */}
-      <Accordion title="Ventas por Categoría">
-        <div className="h-64 md:h-96 flex items-center justify-center">
-          {ventasPorCategoria && ventasPorCategoria.length > 0 ? (
-            <Pie
-              data={{
-                labels: ventasPorCategoria.map((item) => item.categoria),
-                datasets: [
-                  {
-                    data: ventasPorCategoria.map((item) =>
-                      Number(item.total_ingresos)
-                    ),
-                    backgroundColor: COLORS,
-                    borderColor: COLORS.map((color) => color + "80"),
-                    borderWidth: 1,
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    position: "right",
-                    labels: {
-                      font: {
-                        size: 12,
-                      },
-                    },
-                  },
-                  tooltip: {
-                    callbacks: {
-                      label: function (context) {
-                        const label = context.label || "";
-                        const value = context.raw || 0;
-                        const total = context.dataset.data.reduce(
-                          (a, b) => a + b,
-                          0
-                        );
-                        const percentage = ((value / total) * 100).toFixed(1);
-                        return `${label}: ${formatCurrency(
-                          value
-                        )} (${percentage}%)`;
-                      },
-                    },
-                  },
-                },
-              }}
-            />
-          ) : (
-            <div className="text-gray-500">No hay datos disponibles</div>
-          )}
         </div>
       </Accordion>
     </div>
