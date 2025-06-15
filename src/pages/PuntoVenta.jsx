@@ -11,7 +11,10 @@ const PuntoVenta = () => {
   const [error, setError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
   const [paymentMethod, setPaymentMethod] = useState("efectivo");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -74,29 +77,37 @@ const PuntoVenta = () => {
   const addToCart = (product) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
+      let newCart;
       if (existingItem) {
         if (existingItem.cantidad + 1 > product.stock) {
           setError("No hay suficiente stock disponible");
           setTimeout(() => setError(""), 3000);
           return prevCart;
         }
-        return prevCart.map((item) =>
+        newCart = prevCart.map((item) =>
           item.id === product.id
             ? { ...item, cantidad: item.cantidad + 1 }
             : item
         );
+      } else {
+        if (product.stock < 1) {
+          setError("No hay stock disponible para este producto");
+          setTimeout(() => setError(""), 3000);
+          return prevCart;
+        }
+        newCart = [...prevCart, { ...product, cantidad: 1 }];
       }
-      if (product.stock < 1) {
-        setError("No hay stock disponible para este producto");
-        setTimeout(() => setError(""), 3000);
-        return prevCart;
-      }
-      return [...prevCart, { ...product, cantidad: 1 }];
+      localStorage.setItem("cart", JSON.stringify(newCart));
+      return newCart;
     });
   };
 
   const removeFromCart = (productId) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+    setCart((prevCart) => {
+      const newCart = prevCart.filter((item) => item.id !== productId);
+      localStorage.setItem("cart", JSON.stringify(newCart));
+      return newCart;
+    });
   };
 
   const updateQuantity = (productId, newQuantity) => {
@@ -115,9 +126,11 @@ const PuntoVenta = () => {
         return prevCart;
       }
 
-      return prevCart.map((item) =>
+      const newCart = prevCart.map((item) =>
         item.id === productId ? { ...item, cantidad: newQuantity } : item
       );
+      localStorage.setItem("cart", JSON.stringify(newCart));
+      return newCart;
     });
   };
 
@@ -185,6 +198,7 @@ const PuntoVenta = () => {
 
       await posService.createSale(saleData);
       setCart([]);
+      localStorage.removeItem("cart");
       setShowCart(false);
       setShowSuccess(true);
       setSuccessMessage("¡Venta realizada con éxito!");
