@@ -75,6 +75,14 @@ const PuntoVenta = () => {
   }, [selectedCategory, debouncedSearchTerm, currentPage]);
 
   const addToCart = (product) => {
+    // Verificar si el producto existe en la lista actual de productos
+    const productExists = products.some((p) => p.id === product.id);
+    if (!productExists) {
+      setError("Este producto ya no está disponible");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
       let newCart;
@@ -152,6 +160,20 @@ const PuntoVenta = () => {
 
   const handleCheckout = async () => {
     try {
+      // Verificar que todos los productos en el carrito existan
+      const invalidProducts = cart.filter(
+        (item) => !products.some((p) => p.id === item.id)
+      );
+      if (invalidProducts.length > 0) {
+        setError(
+          "Algunos productos ya no están disponibles. Por favor, actualice su carrito."
+        );
+        setTimeout(() => setError(""), 5000);
+        setCart([]);
+        localStorage.removeItem("cart");
+        return;
+      }
+
       const stockErrors = cart
         .map((item) => {
           const product = products.find((p) => p.id === item.id);
