@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import iconImage from "../assets/images/icon.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -36,14 +37,13 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-black to-purple-900">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/src/assets/disco-bg.jpg')] bg-cover bg-center opacity-20"></div>
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/50 via-black/50 to-purple-900/50"></div>
       </div>
 
       <div className="relative w-full max-w-md px-6 py-12 bg-black/40 backdrop-blur-lg rounded-2xl shadow-2xl border border-purple-500/20">
         <div className="text-center mb-8">
           <img
-            src="/src/assets/images/icon.png"
+            src={iconImage}
             alt={`${companyName} Logo`}
             className="w-32 h-32 mx-auto mb-4 rounded-full object-cover"
           />
@@ -141,6 +141,7 @@ const Login = () => {
             © 2024 CORO 69 - Todos los derechos reservados
           </p>
         </div>
+        <div className="text-center text-sm text-gray-500 mt-4">v1.0.0</div>
       </div>
     </div>
   );

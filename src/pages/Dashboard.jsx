@@ -272,11 +272,13 @@ const Dashboard = () => {
                 <div className="mt-2 flex items-center text-sm">
                   <span className="text-indigo-600 font-medium">
                     Margen:{" "}
-                    {(
-                      (resumenGeneral.ganancia_total /
-                        resumenGeneral.total_ingresos) *
-                      100
-                    ).toFixed(1)}
+                    {resumenGeneral.total_ingresos > 0
+                      ? (
+                          (resumenGeneral.ganancia_total /
+                            resumenGeneral.total_ingresos) *
+                          100
+                        ).toFixed(1)
+                      : "0.0"}
                     %
                   </span>
                 </div>
